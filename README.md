@@ -2,6 +2,8 @@
 
 DrawerPresentation is a library that provides a customizable drawer presentation style for iOS applications.
 
+![](https://github.com/noppefoxwolf/DrawerPresentation/blob/main/.github/example.gif)
+
 ## Installation
 
 ```
