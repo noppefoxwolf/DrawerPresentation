@@ -17,6 +17,8 @@ public final class DrawerTransitionController: NSObject {
     weak var parent: UIViewController? = nil
     var makeViewController: () -> UIViewController = { preconditionFailure("No ViewController registered.") }
     
+    var cancellableGestures: Set<CancellableGestureWeakBox> = []
+    
     public init(_ configuration: DrawerTransitionConfiguration = .default) {
         self.configuration = configuration
         self.animator = DrawerTransitionAnimator(drawerWidth: configuration.drawerWidth)
@@ -57,6 +59,10 @@ public final class DrawerTransitionController: NSObject {
                 interactiveTransition = UIPercentDrivenInteractiveTransition()
                 interactiveTransition?.completionCurve = .easeOut
                 presentRegisteredDrawer()
+                
+                cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
+                    gestureRecognizer.state = .cancelled
+                }
             } else {
                 let x = gesture.translation(in: gesture.view).x
                 let percentComplete = max(x / animator.drawerWidth, 0)
@@ -69,9 +75,11 @@ public final class DrawerTransitionController: NSObject {
                 interactiveTransition?.cancel()
             }
             interactiveTransition = nil
+            cancellableGestures.removeAll()
         case .cancelled:
             interactiveTransition?.cancel()
             interactiveTransition = nil
+            cancellableGestures.removeAll()
         default:
             break
         }
@@ -133,20 +141,32 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
 }
 
 extension DrawerTransitionController: UIGestureRecognizerDelegate {
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    public func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        // enable multiple gesture
         if gestureRecognizer == presentPanGesture && otherGestureRecognizer == presentSwipeGesture {
             return true
         }
         
         let scrollView = otherGestureRecognizer.view as? UIScrollView
         guard let scrollView else { return false }
+                
+        // Save gestureRecognizer reference for lazy cancel
+        if otherGestureRecognizer.view is UIScrollView {
+            cancellableGestures.insert(CancellableGestureWeakBox(otherGestureRecognizer))
+        }
+        
+        // Enable only on left //
+        
+        // Special case 1: _UIQueuingScrollView always centered offset.
         if String(describing: type(of: scrollView)) == "_UIQueuingScrollView" {
             let isItemFit = scrollView.contentOffset.x == scrollView.bounds.width
             let isLeft = scrollView.adjustedContentInset.left <= 0
             return isItemFit && isLeft
-        } else {
-            return scrollView.contentOffset.x <= 0
         }
+        
+        return scrollView.contentOffset.x <= 0
     }
 }
-
