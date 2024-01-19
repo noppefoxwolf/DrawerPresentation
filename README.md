@@ -8,7 +8,7 @@ DrawerPresentation is a library that provides a customizable drawer presentation
 .target(
     name: "YourProject",
     dependencies: [
-        .package(url: "", from: "1.0.0")
+        .package(url: "https://github.com/noppefoxwolf/DrawerPresentation", from: "1.0.0")
     ]
 )
 ```
