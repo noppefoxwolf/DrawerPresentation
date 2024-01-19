@@ -155,7 +155,10 @@ extension DrawerTransitionController: UIGestureRecognizerDelegate {
                 
         // Save gestureRecognizer reference for lazy cancel
         if otherGestureRecognizer.view is UIScrollView {
-            cancellableGestures.insert(CancellableGestureWeakBox(otherGestureRecognizer))
+            let box = CancellableGestureWeakBox(otherGestureRecognizer)
+            if !cancellableGestures.contains(box) {
+                cancellableGestures.insert(box)
+            }
         }
         
         // Enable only on left //
