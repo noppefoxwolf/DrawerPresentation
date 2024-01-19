@@ -17,7 +17,7 @@ public final class DrawerTransitionController: NSObject {
     weak var parent: UIViewController? = nil
     var makeViewController: () -> UIViewController = { preconditionFailure("No ViewController registered.") }
     
-    var cancellableGestures: Set<CancellableGestureWeakBox> = []
+    var cancellableGestures: [CancellableGestureWeakBox] = []
     
     public init(_ configuration: DrawerTransitionConfiguration = .default) {
         self.configuration = configuration
@@ -156,12 +156,10 @@ extension DrawerTransitionController: UIGestureRecognizerDelegate {
         // Save gestureRecognizer reference for lazy cancel
         if otherGestureRecognizer.view is UIScrollView {
             let box = CancellableGestureWeakBox(otherGestureRecognizer)
-            if !cancellableGestures.contains(box) {
-                cancellableGestures.insert(box)
-            }
+            cancellableGestures.append(box)
         }
         
-        // Enable only on left //
+        /* Enable only on left */
         
         // Special case 1: _UIQueuingScrollView always centered offset.
         if String(describing: type(of: scrollView)) == "_UIQueuingScrollView" {
