@@ -73,12 +73,24 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         guard let fromView, let toView else { return }
         
         transitionContext.containerView.addSubview(dimmingView)
-        transitionContext.containerView.addSubview(toView)
+        dimmingView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            dimmingView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
+            transitionContext.containerView.bottomAnchor.constraint(equalTo: dimmingView.bottomAnchor),
+            dimmingView.leadingAnchor.constraint(equalTo: transitionContext.containerView.leadingAnchor),
+            transitionContext.containerView.trailingAnchor.constraint(equalTo: dimmingView.trailingAnchor),
+        ])
         
-        toView.frame = CGRect(x: 0, y: 0, width: drawerWidth, height: fromView.bounds.height)
+        transitionContext.containerView.addSubview(toView)
+        toView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            toView.leftAnchor.constraint(equalTo: transitionContext.containerView.leftAnchor),
+            toView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
+            toView.bottomAnchor.constraint(equalTo: transitionContext.containerView.bottomAnchor),
+            toView.widthAnchor.constraint(equalToConstant: drawerWidth)
+        ])
         toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
         dimmingView.alpha = 0
-        dimmingView.frame = fromView.bounds
         
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
