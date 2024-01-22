@@ -38,9 +38,16 @@ class TableViewController: UITableViewController {
         
         dataSource.apply(snapshot)
         
-        drawerTransitionController.addDrawerGesture(to: self, drawerViewController: {
+        drawerTransitionController.addDrawerGesture(to: navigationController!, drawerViewController: {
             UIHostingController(rootView: Text("Interactive side menu"))
         })
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "line.3.horizontal.circle"),
+            primaryAction: UIAction { [unowned self] _ in
+                drawerTransitionController.presentRegisteredDrawer()
+            }
+        )
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

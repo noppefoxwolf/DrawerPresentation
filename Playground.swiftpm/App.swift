@@ -12,8 +12,7 @@ struct App: SwiftUI.App {
 
 struct ContentView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> some UIViewController {
-        //TableViewController(style: .plain)
-        PageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+        UINavigationController(rootViewController: TableViewController(style: .plain))
     }
     
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {

@@ -27,11 +27,15 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         onDismissGesture?(dismissPanGesture)
     }
     
-    func transitionDuration(using transitionContext: (any UIViewControllerContextTransitioning)?) -> TimeInterval {
+    func transitionDuration(
+        using transitionContext: (any UIViewControllerContextTransitioning)?
+    ) -> TimeInterval {
         CATransaction.animationDuration()
     }
     
-    func animateTransition(using transitionContext: any UIViewControllerContextTransitioning) {
+    func animateTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
         if isPresenting {
             animatePresentTransition(using: transitionContext)
         } else {
@@ -39,34 +43,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         }
     }
     
-    func dismissPresentTransition(using transitionContext: any UIViewControllerContextTransitioning) {
-        let fromView = transitionContext.viewController(forKey: .from)?.view
-        let toView = transitionContext.viewController(forKey: .to)?.view
-        
-        guard let fromView, let toView else { return }
-                        
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveLinear,
-            animations: { [dimmingView, drawerWidth] in
-                dimmingView.alpha = 0
-                toView.transform = .identity
-                fromView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
-            },
-            completion: { [dimmingView, dismissPanGesture] _ in
-                if transitionContext.transitionWasCancelled {
-                } else {
-                    fromView.removeFromSuperview()
-                    dimmingView.removeFromSuperview()
-                    transitionContext.containerView.removeGestureRecognizer(dismissPanGesture)
-                }
-                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
-            }
-        )
-    }
-    
-    func animatePresentTransition(using transitionContext: any UIViewControllerContextTransitioning) {
+    func animatePresentTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
         let fromView = transitionContext.viewController(forKey: .from)?.view
         let toView = transitionContext.viewController(forKey: .to)?.view
         
@@ -95,7 +74,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
-            options: .curveLinear,
+            options: .curveEaseOut,
             animations: { [dimmingView, drawerWidth] in
                 dimmingView.alpha = 1
                 toView.transform = .identity
@@ -107,6 +86,35 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                     toView.removeFromSuperview()
                 } else {
                     transitionContext.containerView.addGestureRecognizer(dismissPanGesture)
+                }
+                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+            }
+        )
+    }
+    
+    func dismissPresentTransition(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) {
+        let fromView = transitionContext.viewController(forKey: .from)?.view
+        let toView = transitionContext.viewController(forKey: .to)?.view
+        
+        guard let fromView, let toView else { return }
+                        
+        UIView.animate(
+            withDuration: transitionDuration(using: transitionContext),
+            delay: 0,
+            options: .curveEaseOut,
+            animations: { [dimmingView, drawerWidth] in
+                dimmingView.alpha = 0
+                toView.transform = .identity
+                fromView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
+            },
+            completion: { [dimmingView, dismissPanGesture] _ in
+                if transitionContext.transitionWasCancelled {
+                } else {
+                    fromView.removeFromSuperview()
+                    dimmingView.removeFromSuperview()
+                    transitionContext.containerView.removeGestureRecognizer(dismissPanGesture)
                 }
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }

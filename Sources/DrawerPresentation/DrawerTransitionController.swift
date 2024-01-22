@@ -57,7 +57,7 @@ public final class DrawerTransitionController: NSObject {
             if interactiveTransition == nil {
                 // delay to begin
                 interactiveTransition = UIPercentDrivenInteractiveTransition()
-                interactiveTransition?.completionCurve = .easeOut
+                interactiveTransition?.completionCurve = .linear
                 presentRegisteredDrawer()
                 
                 cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
@@ -94,7 +94,7 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
             switch gesture.state {
             case .began:
                 self.interactiveTransition = UIPercentDrivenInteractiveTransition()
-                self.interactiveTransition?.completionCurve = .easeIn
+                self.interactiveTransition?.completionCurve = .linear
                 presented?.dismiss(animated: true)
             case .changed:
                 let x = gesture.translation(in: gesture.view).x
