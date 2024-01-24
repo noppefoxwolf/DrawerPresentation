@@ -25,10 +25,11 @@ public final class DrawerTransitionController: NSObject {
         super.init()
     }
     
-    #if os(iOS)
     public func addDrawerGesture(to viewController: UIViewController, drawerViewController: @escaping () -> UIViewController) {
         parent = viewController
+        makeViewController = drawerViewController
         
+        #if os(iOS)
         presentPanGesture.delegate = self
         presentPanGesture.addTarget(self, action: #selector(onPan))
         presentPanGesture.maximumNumberOfTouches = 1
@@ -37,10 +38,8 @@ public final class DrawerTransitionController: NSObject {
         presentSwipeGesture.delegate = self
         presentSwipeGesture.direction = .right
         viewController.view.addGestureRecognizer(presentSwipeGesture)
-        
-        makeViewController = drawerViewController
+        #endif
     }
-    #endif
     
     public func presentRegisteredDrawer() {
         let vc = makeViewController()
