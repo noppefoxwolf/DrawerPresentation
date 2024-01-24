@@ -25,6 +25,7 @@ public final class DrawerTransitionController: NSObject {
         super.init()
     }
     
+    #if os(iOS)
     public func addDrawerGesture(to viewController: UIViewController, drawerViewController: @escaping () -> UIViewController) {
         parent = viewController
         
@@ -39,11 +40,14 @@ public final class DrawerTransitionController: NSObject {
         
         makeViewController = drawerViewController
     }
+    #endif
     
     public func presentRegisteredDrawer() {
         let vc = makeViewController()
+        #if os(iOS)
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = self
+        #endif
         parent?.present(vc, animated: true)
     }
     
