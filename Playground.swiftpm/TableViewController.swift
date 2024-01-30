@@ -42,19 +42,27 @@ class TableViewController: UITableViewController {
             UIHostingController(rootView: Text("Interactive side menu"))
         })
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "line.3.horizontal.circle"),
-            primaryAction: UIAction { [unowned self] _ in
-                drawerTransitionController.presentRegisteredDrawer()
-            }
-        )
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(
+                image: UIImage(systemName: "line.3.horizontal.circle"),
+                primaryAction: UIAction { [unowned self] _ in
+                    drawerTransitionController.presentRegisteredDrawer()
+                }
+            ),
+            UIBarButtonItem(
+                systemItem: .search,
+                primaryAction: UIAction { [unowned self] _ in
+                    let vc = UIHostingController(rootView: Text("Hello, World!!"))
+                    vc.modalPresentationStyle = .custom
+                    vc.transitioningDelegate = drawerTransitionController
+                    present(vc, animated: true)
+                }
+            ),
+        ]
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = UIHostingController(rootView: Text("Hello, World!!"))
-        vc.modalPresentationStyle = .custom
-        vc.transitioningDelegate = drawerTransitionController
-        present(vc, animated: true)
-        
+        let vc = TableViewController(style: .plain)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

@@ -173,4 +173,23 @@ extension DrawerTransitionController: UIGestureRecognizerDelegate {
         
         return scrollView.contentOffset.x <= 0
     }
+    
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer == presentSwipeGesture {
+            let navigating: Bool
+            if let nc = parent as? UINavigationController {
+                navigating = nc.viewControllers.count > 1
+            } else if let nc = parent?.navigationController {
+                navigating = nc.viewControllers.count > 1
+            } else if let nc = (parent as? UITabBarController)?.selectedViewController as? UINavigationController {
+                navigating = nc.viewControllers.count > 1
+            } else {
+                navigating = false
+            }
+            if navigating {
+                return false
+            }
+        }
+        return true
+    }
 }
