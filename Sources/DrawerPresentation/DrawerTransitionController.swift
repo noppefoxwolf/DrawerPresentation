@@ -62,6 +62,7 @@ public final class DrawerTransitionController: NSObject {
                 interactiveTransition = UIPercentDrivenInteractiveTransition()
                 interactiveTransition?.completionCurve = .linear
                 presentRegisteredDrawer()
+                interactiveTransition?.update(0)
                 
                 cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
                     gestureRecognizer.state = .cancelled
