@@ -78,7 +78,8 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             animations: { [dimmingView, drawerWidth] in
                 dimmingView.alpha = 1
                 toView.transform = .identity
-                fromView.transform = CGAffineTransform(translationX: drawerWidth, y: 0)
+                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
+                fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
             },
             completion: { [dimmingView, dismissPanGesture] _ in
                 if transitionContext.transitionWasCancelled {
