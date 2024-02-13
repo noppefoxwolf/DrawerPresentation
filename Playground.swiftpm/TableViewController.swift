@@ -39,7 +39,9 @@ class TableViewController: UITableViewController {
         dataSource.apply(snapshot)
         
         drawerTransitionController.addDrawerGesture(to: navigationController!, drawerViewController: {
-            UIHostingController(rootView: Text("Interactive side menu"))
+            UIHostingController(rootView: Button(action: {}, label: {
+                Text("Interactive side menu")
+            }))
         })
         
         navigationItem.rightBarButtonItems = [
