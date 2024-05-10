@@ -47,6 +47,9 @@ public final class DrawerTransitionController: NSObject {
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = self
         #endif
+        if #available(iOS 17.0, *) {
+            vc.traitOverrides.userInterfaceLevel = .elevated
+        }
         parent?.present(vc, animated: true)
     }
     
