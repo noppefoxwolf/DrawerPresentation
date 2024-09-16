@@ -1,11 +1,12 @@
 import UIKit
 
-public struct DrawerTransitionConfiguration {
+public struct DrawerTransitionConfiguration: Sendable {
     public var drawerWidth: Double = 300
     
     public static var `default`: DrawerTransitionConfiguration { .init() }
 }
 
+@MainActor
 public final class DrawerTransitionController: NSObject {
     let configuration: DrawerTransitionConfiguration
     let presentPanGesture = UIPanGestureRecognizer()

@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     let drawerWidth: Double
     var isPresenting: Bool = true
@@ -20,7 +21,10 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     }
     
     deinit {
-        dismissPanGesture.removeTarget(self, action: #selector(onDismissPan))
+        // https://forums.swift.org/t/cleaning-up-in-deinit-with-self-and-complete-concurrency-checking/70012/3
+        MainActor.assumeIsolated {
+            dismissPanGesture.removeTarget(self, action: #selector(onDismissPan))
+        }
     }
     
     @objc func onDismissPan(_ dismissPanGesture: UIPanGestureRecognizer) {
@@ -123,4 +127,3 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         )
     }
 }
-
