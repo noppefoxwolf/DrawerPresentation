@@ -69,11 +69,6 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
         ]
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = TableViewController(style: .plain)
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
     func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
         viewController.dismiss(animated: true)
         
