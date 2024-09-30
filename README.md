@@ -39,6 +39,12 @@ present(vc, animated: true)
 
 Let people know how they can contribute into your project. A contributing guideline will be a big plus.
 
+## Apps Using
+
+<p float="left">
+    <a href="https://apps.apple.com/app/id1668645019"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ca/79/32/ca7932c7-ee99-02e8-4164-2a5a99828070/AppIcon-0-1x_U007epad-0-1-P3-85-220-0.png/100x100bb.jpg" height="65"></a>
+</p>
+
 ## License
 
 This project is licensed under the terms of the MIT license. See the [LICENSE](LICENSE) file for details.
