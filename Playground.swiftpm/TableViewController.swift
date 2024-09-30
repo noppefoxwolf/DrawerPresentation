@@ -10,7 +10,7 @@ struct Item: Hashable {
     let id: UUID = UUID()
 }
 
-class TableViewController: UITableViewController {
+final class TableViewController: UITableViewController, ExampleSideMenuViewControllerDelegate {
     
     let drawerTransitionController = DrawerTransitionController()
     
@@ -38,19 +38,25 @@ class TableViewController: UITableViewController {
         
         dataSource.apply(snapshot)
         
-        drawerTransitionController.addDrawerGesture(to: navigationController!, drawerViewController: {
-            UIHostingController(rootView: Button(action: {}, label: {
-                Text("Interactive side menu")
-            }))
-        })
+        drawerTransitionController.addDrawerGesture(
+            to: navigationController!,
+            drawerViewController: {
+                let vc = ExampleSideMenuViewController()
+                vc.delegate = self
+                return vc
+            }
+        )
         
-        navigationItem.rightBarButtonItems = [
+        navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "line.3.horizontal.circle"),
+                image: UIImage(systemName: "line.3.horizontal"),
                 primaryAction: UIAction { [unowned self] _ in
                     drawerTransitionController.presentRegisteredDrawer()
                 }
-            ),
+            )
+        ]
+        
+        navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
                 systemItem: .search,
                 primaryAction: UIAction { [unowned self] _ in
@@ -67,4 +73,12 @@ class TableViewController: UITableViewController {
         let vc = TableViewController(style: .plain)
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+    func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
+        viewController.dismiss(animated: true)
+        
+        let vc = UIHostingController(rootView: Text("Child View"))
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
+
