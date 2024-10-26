@@ -97,7 +97,7 @@ public final class DrawerTransitionController: NSObject {
 extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        animator.onTapDimmingView = { presented.dismiss(animated: true) }
+        animator.onTapDimmingView = { [weak presented] in presented?.dismiss(animated: true) }
         animator.onDismissGesture = { [weak presented] gesture in
             switch gesture.state {
             case .began:
