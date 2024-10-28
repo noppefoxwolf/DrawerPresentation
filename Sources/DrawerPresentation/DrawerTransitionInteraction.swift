@@ -38,7 +38,7 @@ public final class DrawerInteraction: NSObject, UIInteraction {
         present(isInteractiveTransitoionEnabled: false)
     }
     
-    func present(isInteractiveTransitoionEnabled: Bool) {
+    private func present(isInteractiveTransitoionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
         let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc) ?? 300
