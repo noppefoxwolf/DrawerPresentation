@@ -1,5 +1,4 @@
 import UIKit
-import Combine
 
 final class TapActionInteraction: NSObject, UIInteraction {
     weak var view: UIView?
