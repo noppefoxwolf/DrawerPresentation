@@ -1,49 +1,50 @@
 import UIKit
 
-public struct DrawerTransitionConfiguration: Sendable {
-    public var drawerWidth: Double = 300
-    
-    public static var `default`: DrawerTransitionConfiguration { .init() }
+@MainActor
+public protocol DrawerInteractionDelegate: AnyObject, Sendable {
+    func drawerInteraction(_ interaction: DrawerInteraction, widthForDrawer drawerViewController: UIViewController) -> CGFloat
+    func drawerInteraction(_ interaction: DrawerInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController?
+    func viewController(for interaction: DrawerInteraction) -> UIViewController
 }
 
 @MainActor
-public final class DrawerTransitionController: NSObject {
-    let configuration: DrawerTransitionConfiguration
+public final class DrawerInteraction: NSObject, UIInteraction {
+    weak var delegate: DrawerInteractionDelegate? = nil
     let presentPanGesture = UIPanGestureRecognizer()
     let presentSwipeGesture = UISwipeGestureRecognizer()
     
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
-    let animator: DrawerTransitionAnimator
-    
-    weak var parent: UIViewController? = nil
-    var makeViewController: () -> UIViewController = { preconditionFailure("No ViewController registered.") }
+    var animator: DrawerTransitionAnimator? = nil
     
     var cancellableGestures: [CancellableGestureWeakBox] = []
     
-    public init(_ configuration: DrawerTransitionConfiguration = .default) {
-        self.configuration = configuration
-        self.animator = DrawerTransitionAnimator(drawerWidth: configuration.drawerWidth)
+    public init(delegate: DrawerInteractionDelegate) {
+        self.delegate = delegate
         super.init()
     }
     
-    public func addDrawerGesture(to viewController: UIViewController, drawerViewController: @escaping () -> UIViewController) {
-        parent = viewController
-        makeViewController = drawerViewController
-        
+    public weak var view: UIView? = nil
+    
+    public func willMove(to view: UIView?) {
+        self.view = view
+    }
+    
+    public func didMove(to view: UIView?) {
         #if os(iOS)
         presentPanGesture.delegate = self
         presentPanGesture.addTarget(self, action: #selector(onPan))
         presentPanGesture.maximumNumberOfTouches = 1
-        viewController.view.addGestureRecognizer(presentPanGesture)
-        
+        view?.addGestureRecognizer(presentPanGesture)
+
         presentSwipeGesture.delegate = self
         presentSwipeGesture.direction = .right
-        viewController.view.addGestureRecognizer(presentSwipeGesture)
+        view?.addGestureRecognizer(presentSwipeGesture)
         #endif
     }
     
-    public func presentRegisteredDrawer() {
-        let vc = makeViewController()
+    public func performInteraction() {
+        guard let parent = delegate?.viewController(for: self) else { return }
+        guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
         #if os(iOS)
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = self
@@ -51,7 +52,7 @@ public final class DrawerTransitionController: NSObject {
         if #available(iOS 17.0, *) {
             vc.traitOverrides.userInterfaceLevel = .elevated
         }
-        parent?.present(vc, animated: true)
+        parent.present(vc, animated: true)
     }
     
     @objc
@@ -65,7 +66,7 @@ public final class DrawerTransitionController: NSObject {
                 // delay to begin
                 interactiveTransition = UIPercentDrivenInteractiveTransition()
                 interactiveTransition?.completionCurve = .linear
-                presentRegisteredDrawer()
+                performInteraction()
                 interactiveTransition?.update(0)
                 
                 cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
@@ -73,7 +74,9 @@ public final class DrawerTransitionController: NSObject {
                 }
             } else {
                 let x = gesture.translation(in: gesture.view).x
-                let percentComplete = max(x / animator.drawerWidth, 0)
+                let presentedViewController = delegate?.viewController(for: self)
+                let width = presentedViewController.map { delegate?.drawerInteraction(self, widthForDrawer: $0) }?.flatMap({ $0 }) ?? 300.0
+                let percentComplete = max(x / width, 0)
                 interactiveTransition?.update(percentComplete)
             }
         case .ended:
@@ -94,11 +97,12 @@ public final class DrawerTransitionController: NSObject {
     }
 }
 
-extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
+extension DrawerInteraction: UIViewControllerTransitioningDelegate {
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+        let animator = DrawerTransitionAnimator(drawerWidth: delegate?.drawerInteraction(self, widthForDrawer: presenting) ?? 300)
         animator.onTapDimmingView = { [weak presented] in presented?.dismiss(animated: true) }
-        animator.onDismissGesture = { [weak presented] gesture in
+        animator.onDismissGesture = { [weak presented] (gesture, drawerWidth) in
             switch gesture.state {
             case .began:
                 self.interactiveTransition = UIPercentDrivenInteractiveTransition()
@@ -106,7 +110,7 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
                 presented?.dismiss(animated: true)
             case .changed:
                 let x = gesture.translation(in: gesture.view).x
-                let percentComplete = -min(x / self.animator.drawerWidth, 0)
+                let percentComplete = -min(x / drawerWidth, 0)
                 self.interactiveTransition?.update(percentComplete)
             case .ended:
                 if gesture.velocity(in: gesture.view).x < 0 {
@@ -123,6 +127,7 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
             }
         }
         animator.isPresenting = true
+        self.animator = animator
         return animator
     }
     
@@ -135,7 +140,7 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
     }
     
     public func animationController(forDismissed dismissed: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        animator.isPresenting = false
+        animator?.isPresenting = false
         return animator
     }
     
@@ -148,7 +153,7 @@ extension DrawerTransitionController: UIViewControllerTransitioningDelegate {
     }
 }
 
-extension DrawerTransitionController: UIGestureRecognizerDelegate {
+extension DrawerInteraction: UIGestureRecognizerDelegate {
     public func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
@@ -180,6 +185,7 @@ extension DrawerTransitionController: UIGestureRecognizerDelegate {
     }
     
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        let parent = delegate?.viewController(for: self)
         if gestureRecognizer == presentSwipeGesture {
             let navigating: Bool
             if let nc = parent as? UINavigationController {

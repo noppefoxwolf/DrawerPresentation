@@ -12,9 +12,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         set { dimmingView.onTap = newValue }
     }
     
-    var onDismissGesture: ((_ dismissPanGesture: UIPanGestureRecognizer) -> Void)? = nil
+    var onDismissGesture: ((_ dismissPanGesture: UIPanGestureRecognizer, _ drawerWidth: CGFloat) -> Void)? = nil
     
-    init(drawerWidth: Double) {
+    init(drawerWidth: CGFloat) {
         self.drawerWidth = drawerWidth
         super.init()
         dismissPanGesture.addTarget(self, action: #selector(onDismissPan))
@@ -28,7 +28,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     }
     
     @objc func onDismissPan(_ dismissPanGesture: UIPanGestureRecognizer) {
-        onDismissGesture?(dismissPanGesture)
+        onDismissGesture?(dismissPanGesture, drawerWidth)
     }
     
     func transitionDuration(
