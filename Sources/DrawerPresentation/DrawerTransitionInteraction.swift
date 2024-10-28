@@ -34,11 +34,18 @@ public final class DrawerInteraction: NSObject, UIInteraction {
         #endif
     }
     
-    public func performInteraction() {
+    public func present() {
+        present(isInteractiveTransitoionEnabled: false)
+    }
+    
+    func present(isInteractiveTransitoionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
         let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc) ?? 300
         transitionController = DrawerTransitionController(drawerWidth: drawerWidth)
+        if isInteractiveTransitoionEnabled {
+            transitionController?.interactiveTransition = UIPercentDrivenInteractiveTransition()
+        }
         #if os(iOS)
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = transitionController
@@ -57,8 +64,10 @@ public final class DrawerInteraction: NSObject, UIInteraction {
             break
         case .changed:
             if transitionController?.interactiveTransition == nil {
-                performInteraction()
-                // delay to begin                
+                present(isInteractiveTransitoionEnabled: true)
+                transitionController?.interactiveTransition?.completionCurve = .linear
+                transitionController?.interactiveTransition?.update(0)
+                // delay to begin
                 cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
                     gestureRecognizer.state = .cancelled
                 }

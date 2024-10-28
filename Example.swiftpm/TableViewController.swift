@@ -36,14 +36,13 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
         dataSource.apply(snapshot)
         
         let interaction = DrawerInteraction(delegate: self)
-        
         navigationController!.view.addInteraction(interaction)
         
         navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
                 image: UIImage(systemName: "line.3.horizontal"),
                 primaryAction: UIAction { _ in
-                    interaction.performInteraction()
+                    interaction.present()
                 }
             )
         ]

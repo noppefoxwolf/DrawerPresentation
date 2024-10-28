@@ -7,9 +7,15 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     let dimmingView = DimmingView()
     let dismissPanGesture = UIPanGestureRecognizer()
     
-    var onTapDimmingView: (() -> Void)? {
-        get { dimmingView.onTap }
-        set { dimmingView.onTap = newValue }
+    var dimmingTapInteraction: TapActionInteraction? {
+        didSet {
+            if let oldValue {
+                dimmingView.removeInteraction(oldValue)
+            }
+            if let interaction = dimmingTapInteraction {
+                dimmingView.addInteraction(interaction)
+            }
+        }
     }
     
     var onDismissGesture: ((_ dismissPanGesture: UIPanGestureRecognizer, _ drawerWidth: CGFloat) -> Void)? = nil

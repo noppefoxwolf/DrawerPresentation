@@ -3,17 +3,18 @@ import UIKit
 public final class DrawerTransitionController: NSObject, UIViewControllerTransitioningDelegate {
     let drawerWidth: CGFloat
     var animator: DrawerTransitionAnimator? = nil
-    var interactiveTransition: UIPercentDrivenInteractiveTransition? = UIPercentDrivenInteractiveTransition()
+    var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
     
     public init(drawerWidth: CGFloat) {
         self.drawerWidth = drawerWidth
-        interactiveTransition?.completionCurve = .linear
-        interactiveTransition?.update(0)
+        
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
         let animator = DrawerTransitionAnimator(drawerWidth: drawerWidth)
-        animator.onTapDimmingView = { [weak presented] in presented?.dismiss(animated: true) }
+        animator.dimmingTapInteraction = TapActionInteraction(action: { [weak presented] in
+            presented?.dismiss(animated: true)
+        })
         animator.onDismissGesture = { [weak presented] (gesture, drawerWidth) in
             switch gesture.state {
             case .began:
