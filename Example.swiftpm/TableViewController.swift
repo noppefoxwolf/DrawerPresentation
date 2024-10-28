@@ -52,13 +52,18 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
             UIBarButtonItem(
                 systemItem: .search,
                 primaryAction: UIAction { [unowned self] _ in
-                    let vc = UIHostingController(rootView: Text("Hello, World!!"))
-                    vc.modalPresentationStyle = .custom
-                    vc.transitioningDelegate = drawerTransitionController
-                    present(vc, animated: true)
+                    presentDrawerManually()
                 }
             ),
         ]
+    }
+    
+    let manualTransitionDelegate = DrawerTransitionController(drawerWidth: 300)
+    func presentDrawerManually() {
+        let vc = UIHostingController(rootView: Text("Hello, World!!"))
+        vc.modalPresentationStyle = .custom
+        vc.transitioningDelegate = manualTransitionDelegate
+        present(vc, animated: true)
     }
     
     func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
