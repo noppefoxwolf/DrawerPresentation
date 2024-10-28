@@ -11,9 +11,6 @@ struct Item: Hashable {
 }
 
 final class TableViewController: UITableViewController, ExampleSideMenuViewControllerDelegate {
-    
-    let drawerTransitionController = DrawerTransitionController()
-    
     lazy var dataSource = UITableViewDiffableDataSource<Section, Item>(
         tableView: tableView,
         cellProvider: { [unowned self] (tableView, indexPath, item) in
@@ -38,20 +35,14 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
         
         dataSource.apply(snapshot)
         
-        drawerTransitionController.addDrawerGesture(
-            to: navigationController!,
-            drawerViewController: {
-                let vc = ExampleSideMenuViewController()
-                vc.delegate = self
-                return vc
-            }
-        )
+        let interaction = DrawerInteraction(delegate: self)
+        navigationController!.view.addInteraction(interaction)
         
         navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
                 image: UIImage(systemName: "line.3.horizontal"),
-                primaryAction: UIAction { [unowned self] _ in
-                    drawerTransitionController.presentRegisteredDrawer()
+                primaryAction: UIAction { _ in
+                    interaction.present()
                 }
             )
         ]
@@ -60,13 +51,18 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
             UIBarButtonItem(
                 systemItem: .search,
                 primaryAction: UIAction { [unowned self] _ in
-                    let vc = UIHostingController(rootView: Text("Hello, World!!"))
-                    vc.modalPresentationStyle = .custom
-                    vc.transitioningDelegate = drawerTransitionController
-                    present(vc, animated: true)
+                    presentDrawerManually()
                 }
             ),
         ]
+    }
+    
+    let manualTransitionDelegate = DrawerTransitionController(drawerWidth: 300)
+    func presentDrawerManually() {
+        let vc = UIHostingController(rootView: Text("Hello, World!!"))
+        vc.modalPresentationStyle = .custom
+        vc.transitioningDelegate = manualTransitionDelegate
+        present(vc, animated: true)
     }
     
     func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
@@ -77,3 +73,19 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
     }
 }
 
+
+extension TableViewController: DrawerInteractionDelegate {
+    func viewController(for interaction: DrawerInteraction) -> UIViewController {
+        navigationController!
+    }
+    
+    func drawerInteraction(_ interaction: DrawerInteraction, widthForDrawer drawerViewController: UIViewController) -> CGFloat {
+        300
+    }
+    
+    func drawerInteraction(_ interaction: DrawerInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
+        let vc = ExampleSideMenuViewController()
+        vc.delegate = self
+        return vc
+    }
+}

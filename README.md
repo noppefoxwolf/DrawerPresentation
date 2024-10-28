@@ -18,20 +18,34 @@ DrawerPresentation is a library that provides a customizable drawer presentation
 ## Usage
 
 ```swift
-let drawerTransitionController = DrawerTransitionController()
 
-// add interactive gesture and register drawer
-drawerTransitionController.addDrawerGesture(to: self, drawerViewController: {
-    UIHostingController(rootView: Text("Interactive side menu"))
-})
+// Add Interaction
+let interaction = DrawerInteraction(delegate: self)
+navigationController!.view.addInteraction(interaction)
 
-// present registered drawer manually
-drawerTransitionController.presentRegisteredDrawer()
+// Delegate Example
+extension ViewController: DrawerInteractionDelegate {
+    func viewController(for interaction: DrawerInteraction) -> UIViewController {
+        self
+    }
+    
+    func drawerInteraction(_ interaction: DrawerInteraction, widthForDrawer drawerViewController: UIViewController) -> CGFloat {
+        300
+    }
+    
+    func drawerInteraction(_ interaction: DrawerInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
+        UIHostingController(rootView: Text("Interactive side menu"))
+    }
+}
 
-// present drawer manually
+// Perform interaction manually
+interaction.present()
+
+// Using transitioningDelegate directly
+self.transitionController = DrawerTransitionController(drawerWidth: 300)
 let vc = UIHostingController(rootView: Text("Hello, World!!"))
 vc.modalPresentationStyle = .custom
-vc.transitioningDelegate = drawerTransitionController
+vc.transitioningDelegate = transitionController
 present(vc, animated: true)
 ```
 
