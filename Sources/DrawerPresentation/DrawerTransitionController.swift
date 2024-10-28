@@ -7,7 +7,6 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     
     public init(drawerWidth: CGFloat) {
         self.drawerWidth = drawerWidth
-        
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
