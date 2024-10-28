@@ -21,7 +21,7 @@ DrawerPresentation is a library that provides a customizable drawer presentation
 
 // Add Interaction
 let interaction = DrawerInteraction(delegate: self)
-navigationController!.view.addInteraction(interaction)
+view.addInteraction(interaction)
 
 // Delegate Example
 extension ViewController: DrawerInteractionDelegate {
