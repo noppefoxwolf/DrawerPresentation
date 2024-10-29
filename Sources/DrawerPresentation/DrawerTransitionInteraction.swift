@@ -1,8 +1,8 @@
 import UIKit
 
 @MainActor
-public final class DrawerInteraction: NSObject, UIInteraction {
-    weak var delegate: (any DrawerInteractionDelegate)? = nil
+open class DrawerInteraction: NSObject, UIInteraction {
+    public weak var delegate: (any DrawerInteractionDelegate)? = nil
     
     let presentPanGesture = UIPanGestureRecognizer()
     let presentSwipeGesture = UISwipeGestureRecognizer()
