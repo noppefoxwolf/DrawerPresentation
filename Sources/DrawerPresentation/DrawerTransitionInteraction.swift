@@ -101,6 +101,7 @@ extension DrawerInteraction: UIGestureRecognizerDelegate {
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
+        
         // enable multiple gesture
         if gestureRecognizer == presentPanGesture && otherGestureRecognizer == presentSwipeGesture {
             return true
@@ -129,7 +130,7 @@ extension DrawerInteraction: UIGestureRecognizerDelegate {
     
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let parent = delegate?.viewController(for: self)
-        if gestureRecognizer == presentSwipeGesture {
+        if gestureRecognizer == presentSwipeGesture || gestureRecognizer == presentPanGesture {
             let navigating: Bool
             if let nc = parent as? UINavigationController {
                 navigating = nc.viewControllers.count > 1
