@@ -46,6 +46,12 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     func animateTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
+        interruptibleAnimator(using: transitionContext).startAnimation()
+    }
+    
+    func interruptibleAnimator(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) -> any UIViewImplicitlyAnimating {
         if isPresenting {
             animatePresentTransition(using: transitionContext)
         } else {
@@ -55,11 +61,16 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     
     func animatePresentTransition(
         using transitionContext: any UIViewControllerContextTransitioning
-    ) {
+    ) -> any UIViewImplicitlyAnimating {
+        let animator = UIViewPropertyAnimator(
+            duration: transitionDuration(using: transitionContext),
+            curve: .easeOut
+        )
+        
         let fromView = transitionContext.viewController(forKey: .from)?.view
         let toView = transitionContext.viewController(forKey: .to)?.view
         
-        guard let fromView, let toView else { return }
+        guard let fromView, let toView else { return animator }
         
         transitionContext.containerView.addSubview(dimmingView)
         dimmingView.translatesAutoresizingMaskIntoConstraints = false
@@ -72,26 +83,28 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         
         transitionContext.containerView.addSubview(toView)
         toView.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             toView.leftAnchor.constraint(equalTo: transitionContext.containerView.leftAnchor),
             toView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
             toView.bottomAnchor.constraint(equalTo: transitionContext.containerView.bottomAnchor),
             toView.widthAnchor.constraint(equalToConstant: drawerWidth)
         ])
-        toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
-        dimmingView.alpha = 0
         
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
-                dimmingView.alpha = 1
-                toView.transform = .identity
-                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
-            },
-            completion: { [dimmingView, dismissPanGesture] _ in
+        dimmingView.alpha = 0
+        toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
+        
+        animator.addAnimations { [dimmingView, drawerWidth] in
+            dimmingView.alpha = 1
+            toView.transform = .identity
+            // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
+            fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
+            
+            transitionContext.containerView.layoutIfNeeded()
+        }
+        
+        animator.addCompletion { [dimmingView, dismissPanGesture] _ in
+            MainActor.assumeIsolated {
                 if transitionContext.transitionWasCancelled {
                     dimmingView.removeFromSuperview()
                     toView.removeFromSuperview()
@@ -100,28 +113,31 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 }
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }
-        )
+        }
+        return animator
     }
     
     func dismissPresentTransition(
         using transitionContext: any UIViewControllerContextTransitioning
-    ) {
+    ) -> any UIViewImplicitlyAnimating {
+        let animator = UIViewPropertyAnimator(
+            duration: transitionDuration(using: transitionContext),
+            curve: .easeOut
+        )
+        
         let fromView = transitionContext.viewController(forKey: .from)?.view
         let toView = transitionContext.viewController(forKey: .to)?.view
         
-        guard let fromView, let toView else { return }
-                        
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
-                dimmingView.alpha = 0
-                toView.transform = .identity
-                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
-            },
-            completion: { [dimmingView, dismissPanGesture] _ in
+        guard let fromView, let toView else { return animator }
+        
+        animator.addAnimations { [dimmingView, drawerWidth] in
+            dimmingView.alpha = 0
+            toView.transform = .identity
+            // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
+            fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
+        }
+        animator.addCompletion { [dimmingView, dismissPanGesture] _ in
+            MainActor.assumeIsolated {
                 if transitionContext.transitionWasCancelled {
                 } else {
                     fromView.removeFromSuperview()
@@ -130,6 +146,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 }
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }
-        )
+        }
+        return animator
     }
 }
