@@ -23,7 +23,6 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
             case .changed:
                 let x = gesture.translation(in: gesture.view).x
                 let percentComplete = -min(x / drawerWidth, 0)
-                self.animator?.dimmingView.intensity = 1.0 - percentComplete
                 self.interactiveTransition?.update(percentComplete)
             case .ended:
                 if gesture.velocity(in: gesture.view).x < 0 {

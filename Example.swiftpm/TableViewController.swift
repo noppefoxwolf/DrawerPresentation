@@ -27,13 +27,11 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.backgroundView = UIImageView(image: UIImage(resource: .wallpaper))
-        
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         _ = dataSource
         
         snapshot.appendSections([.items])
-        //snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
+        snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
         
         dataSource.apply(snapshot)
         

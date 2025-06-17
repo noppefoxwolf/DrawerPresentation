@@ -6,7 +6,6 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     var isPresenting: Bool = true
     let dimmingView = DimmingView()
     let dismissPanGesture = UIPanGestureRecognizer()
-    let isSlideFromViewEnabled: Bool = false
     
     var dimmingTapInteraction: TapActionInteraction? {
         didSet {
@@ -80,19 +79,17 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             toView.widthAnchor.constraint(equalToConstant: drawerWidth)
         ])
         toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
-        dimmingView.intensity = 0
+        dimmingView.alpha = 0
         
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
             options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth, isSlideFromViewEnabled] in
-                dimmingView.intensity = 1
+            animations: { [dimmingView, drawerWidth] in
+                dimmingView.alpha = 1
                 toView.transform = .identity
                 // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                if isSlideFromViewEnabled {
-                    fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
-                }
+                fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
             },
             completion: { [dimmingView, dismissPanGesture] _ in
                 if transitionContext.transitionWasCancelled {
@@ -118,11 +115,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
             options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth, isSlideFromViewEnabled] in
-                dimmingView.intensity = 0
-                if isSlideFromViewEnabled {
-                    toView.transform = .identity
-                }
+            animations: { [dimmingView, drawerWidth] in
+                dimmingView.alpha = 0
+                toView.transform = .identity
                 // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
                 fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
             },
