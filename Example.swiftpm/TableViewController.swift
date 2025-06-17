@@ -27,11 +27,13 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.backgroundView = UIImageView(image: UIImage(resource: .wallpaper))
+        
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         _ = dataSource
         
         snapshot.appendSections([.items])
-        snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
+        //snapshot.appendItems((0..<100).map({ _ in Item() }), toSection: .items)
         
         dataSource.apply(snapshot)
         
@@ -40,7 +42,7 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
         
         navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "line.3.horizontal"),
+                image: UIImage(systemName: "sidebar.left"),
                 primaryAction: UIAction { _ in
                     interaction.present()
                 }
@@ -59,7 +61,20 @@ final class TableViewController: UITableViewController, ExampleSideMenuViewContr
     
     let manualTransitionDelegate = DrawerTransitionController(drawerWidth: 300)
     func presentDrawerManually() {
-        let vc = UIHostingController(rootView: Text("Hello, World!!"))
+        struct SideBarContentView: View {
+            var body: some View {
+                NavigationView {
+                    List {
+                        
+                    }
+                    .toolbar {
+                        EditButton()
+                    }
+                }
+            }
+        }
+        let vc = UIHostingController(rootView: SideBarContentView())
+        
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = manualTransitionDelegate
         present(vc, animated: true)
