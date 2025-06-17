@@ -6,6 +6,8 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     var isPresenting: Bool = true
     let dimmingView = DimmingView()
     let dismissPanGesture = UIPanGestureRecognizer()
+    var presentAnimator: UIViewPropertyAnimator?
+    var dismissAnimator: UIViewPropertyAnimator?
     
     var dimmingTapInteraction: TapActionInteraction? {
         didSet {
@@ -62,9 +64,13 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     func animatePresentTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) -> any UIViewImplicitlyAnimating {
+        if let presentAnimator {
+            return presentAnimator
+        }
+        
         let animator = UIViewPropertyAnimator(
             duration: transitionDuration(using: transitionContext),
-            curve: .easeOut
+            curve: .linear
         )
         
         let fromView = transitionContext.viewController(forKey: .from)?.view
@@ -103,6 +109,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         
         animator.addCompletion { [dimmingView, dismissPanGesture] _ in
             MainActor.assumeIsolated {
+                self.presentAnimator = nil
                 if transitionContext.transitionWasCancelled {
                     dimmingView.removeFromSuperview()
                     toView.removeFromSuperview()
@@ -112,15 +119,20 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }
         }
+        presentAnimator = animator
         return animator
     }
     
     func dismissPresentTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) -> any UIViewImplicitlyAnimating {
+        if let dismissAnimator {
+            return dismissAnimator
+        }
+        
         let animator = UIViewPropertyAnimator(
             duration: transitionDuration(using: transitionContext),
-            curve: .easeOut
+            curve: .linear
         )
         
         let fromView = transitionContext.viewController(forKey: .from)?.view
@@ -136,6 +148,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         }
         animator.addCompletion { [dimmingView, dismissPanGesture] _ in
             MainActor.assumeIsolated {
+                self.dismissAnimator = nil
                 if transitionContext.transitionWasCancelled {
                 } else {
                     fromView.removeFromSuperview()
@@ -145,6 +158,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
             }
         }
+        dismissAnimator = animator
         return animator
     }
 }
