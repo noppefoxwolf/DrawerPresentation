@@ -76,6 +76,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 let presentedViewController = delegate?.viewController(for: self)
                 let width = presentedViewController.map { delegate?.drawerInteraction(self, widthForDrawer: $0) }?.flatMap({ $0 }) ?? 300.0
                 let percentComplete = max(x / width, 0)
+                transitionController?.animator?.dimmingView.intensity = percentComplete
                 transitionController?.interactiveTransition?.update(percentComplete)
             }
         case .ended:
