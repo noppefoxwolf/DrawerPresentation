@@ -14,7 +14,8 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         animator.dimmingTapInteraction = TapActionInteraction(action: { [weak presented] in
             presented?.dismiss(animated: true)
         })
-        animator.onDismissGesture = { [weak presented] (gesture, drawerWidth) in
+        animator.onDismissGesture = { [weak self, weak presented] (gesture, drawerWidth) in
+            guard let self else { return }
             switch gesture.state {
             case .began:
                 self.interactiveTransition = UIPercentDrivenInteractiveTransition()
