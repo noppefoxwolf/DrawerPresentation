@@ -30,7 +30,7 @@ let package = Package(
     ],
     
     dependencies: [
-        .package(path: "../")
+        .package(name: "DrawerPresentation", path: "../")
     ],
     
     targets: [
@@ -38,10 +38,7 @@ let package = Package(
             name: "AppModule",
             
             dependencies: [
-                .product(
-                    name: "DrawerPresentation",
-                    package: "DrawerPresentation"
-                )
+                .product(name: "DrawerPresentation", package: "DrawerPresentation")
             ],
             
             path: "."
