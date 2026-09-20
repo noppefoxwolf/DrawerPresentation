@@ -1,12 +1,11 @@
 import UIKit
+import InteractiveContainerPanGestureRecognizer
 
 @MainActor
 open class DrawerInteraction: NSObject, UIInteraction {
     public weak var delegate: (any DrawerInteractionDelegate)? = nil
     
-    let presentPanGesture = UIPanGestureRecognizer()
-    let presentSwipeGesture = UISwipeGestureRecognizer()
-    var cancellableGestures: [CancellableGestureWeakBox] = []
+    let presentPanGesture = InteractiveContainerPanGestureRecognizer()
     
     var transitionController: DrawerTransitionController? = nil
     
@@ -23,14 +22,9 @@ open class DrawerInteraction: NSObject, UIInteraction {
     
     public func didMove(to view: UIView?) {
         #if os(iOS)
-        presentPanGesture.delegate = self
         presentPanGesture.addTarget(self, action: #selector(onPan))
         presentPanGesture.maximumNumberOfTouches = 1
         view?.addGestureRecognizer(presentPanGesture)
-
-        presentSwipeGesture.delegate = self
-        presentSwipeGesture.direction = .right
-        view?.addGestureRecognizer(presentSwipeGesture)
         #endif
     }
     
@@ -58,7 +52,6 @@ open class DrawerInteraction: NSObject, UIInteraction {
     
     @objc
     private func onPan(_ gesture: UIPanGestureRecognizer) {
-        guard presentSwipeGesture.state == .ended else { return }
         switch gesture.state {
         case .began:
             break
@@ -67,10 +60,6 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 present(isInteractiveTransitoionEnabled: true)
                 transitionController?.interactiveTransition?.completionCurve = .linear
                 transitionController?.interactiveTransition?.update(0)
-                // delay to begin
-                cancellableGestures.compactMap(\.gestureRecognizer).forEach { gestureRecognizer in
-                    gestureRecognizer.state = .cancelled
-                }
             } else {
                 let x = gesture.translation(in: gesture.view).x
                 let presentedViewController = delegate?.viewController(for: self)
@@ -85,66 +74,11 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 transitionController?.interactiveTransition?.cancel()
             }
             transitionController?.interactiveTransition = nil
-            cancellableGestures.removeAll()
         case .cancelled:
             transitionController?.interactiveTransition?.cancel()
             transitionController?.interactiveTransition = nil
-            cancellableGestures.removeAll()
         default:
             break
         }
-    }
-}
-
-extension DrawerInteraction: UIGestureRecognizerDelegate {
-    public func gestureRecognizer(
-        _ gestureRecognizer: UIGestureRecognizer,
-        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
-    ) -> Bool {
-        
-        // enable multiple gesture
-        if gestureRecognizer == presentPanGesture && otherGestureRecognizer == presentSwipeGesture {
-            return true
-        }
-        
-        let scrollView = otherGestureRecognizer.view as? UIScrollView
-        guard let scrollView else { return false }
-                
-        // Save gestureRecognizer reference for lazy cancel
-        if otherGestureRecognizer.view is UIScrollView {
-            let box = CancellableGestureWeakBox(otherGestureRecognizer)
-            cancellableGestures.append(box)
-        }
-        
-        /* Enable only on left */
-        
-        // Special case 1: _UIQueuingScrollView always centered offset.
-        if String(describing: type(of: scrollView)) == "_UIQueuingScrollView" {
-            let isItemFit = scrollView.contentOffset.x == scrollView.bounds.width
-            let isLeft = scrollView.adjustedContentInset.left <= 0
-            return isItemFit && isLeft
-        }
-        
-        return scrollView.contentOffset.x <= 0
-    }
-    
-    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        let parent = delegate?.viewController(for: self)
-        if gestureRecognizer == presentSwipeGesture || gestureRecognizer == presentPanGesture {
-            let navigating: Bool
-            if let nc = parent as? UINavigationController {
-                navigating = nc.viewControllers.count > 1
-            } else if let nc = parent?.navigationController {
-                navigating = nc.viewControllers.count > 1
-            } else if let nc = (parent as? UITabBarController)?.selectedViewController as? UINavigationController {
-                navigating = nc.viewControllers.count > 1
-            } else {
-                navigating = false
-            }
-            if navigating {
-                return false
-            }
-        }
-        return true
     }
 }
