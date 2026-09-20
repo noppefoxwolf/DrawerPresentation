@@ -22,6 +22,9 @@ let package = Package(
             dependencies: ["InteractiveContainerPanGestureRecognizer"]),
         .testTarget(
             name: "DrawerPresentationTests",
-            dependencies: ["DrawerPresentation"]),
+            dependencies: [
+                "DrawerPresentation",
+                "InteractiveContainerPanGestureRecognizer",
+            ]),
     ]
 )

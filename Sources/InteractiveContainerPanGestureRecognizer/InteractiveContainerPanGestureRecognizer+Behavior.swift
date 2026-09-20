@@ -55,6 +55,34 @@ extension InteractiveContainerPanGestureRecognizer {
             }
         }
 
+        /// Gives a scroll-style page view controller priority when a page exists in the swipe direction.
+        static let pageViewController = Behavior.custom { recognizer, event in
+            guard case .shouldBegin(_, let velocity, let scrollView) = event,
+                  recognizer.matchesDirection(velocity),
+                  let scrollView,
+                  let pageViewController = recognizer.pageViewController(containing: scrollView),
+                  let currentViewController = pageViewController.viewControllers?.first,
+                  let dataSource = pageViewController.dataSource else {
+                return .ignore
+            }
+
+            let adjacentViewController: UIViewController?
+            switch recognizer.direction {
+            case .right, .down:
+                adjacentViewController = dataSource.pageViewController(
+                    pageViewController,
+                    viewControllerBefore: currentViewController
+                )
+            case .left, .up:
+                adjacentViewController = dataSource.pageViewController(
+                    pageViewController,
+                    viewControllerAfter: currentViewController
+                )
+            }
+
+            return adjacentViewController == nil ? .ignore : .deny
+        }
+
         /// Gives the system navigation pop transition priority over the custom pan.
         static let popInteraction = Behavior.custom { recognizer, event in
             switch event {
@@ -108,14 +136,26 @@ extension InteractiveContainerPanGestureRecognizer {
 
         let location = location(in: rootView)
         let velocity = velocity(in: rootView)
+        return shouldBegin(
+            location: location,
+            velocity: velocity,
+            scrollView: trackedScrollView
+        )
+    }
+
+    package func shouldBegin(
+        location: CGPoint,
+        velocity: CGPoint,
+        scrollView: UIScrollView?
+    ) -> Bool {
         let hasMatchingDirection = matchesDirection(velocity)
-        let isAtScrollViewBoundary = trackedScrollView.map {
+        let isAtScrollViewBoundary = scrollView.map {
             isAtBoundary(of: $0)
         } ?? true
         let event = BehaviorEvent.shouldBegin(
             location: location,
             velocity: velocity,
-            scrollView: trackedScrollView
+            scrollView: scrollView
         )
         let shouldBegin = hasMatchingDirection
             && !decisions(for: event).contains(where: isDenied)
@@ -247,6 +287,20 @@ extension InteractiveContainerPanGestureRecognizer {
                 return scrollView
             }
             currentView = current.superview
+        }
+
+        return nil
+    }
+
+    fileprivate func pageViewController(containing view: UIView?) -> UIPageViewController? {
+        var responder: UIResponder? = view
+
+        while let currentResponder = responder {
+            if let pageViewController = currentResponder as? UIPageViewController {
+                return pageViewController
+            }
+
+            responder = currentResponder.next
         }
 
         return nil
