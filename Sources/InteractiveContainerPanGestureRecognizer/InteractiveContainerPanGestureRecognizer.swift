@@ -18,7 +18,7 @@ package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecogn
 
     var behavior: [Behavior] = [.scrollView, .popInteraction]
     var direction: Direction = .right
-    var isDebugLoggingEnabled = true
+    var isDebugLoggingEnabled = false
 
     weak var trackedScrollView: UIScrollView?
 
