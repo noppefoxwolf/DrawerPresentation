@@ -108,14 +108,26 @@ extension InteractiveContainerPanGestureRecognizer {
 
         let location = location(in: rootView)
         let velocity = velocity(in: rootView)
+        return shouldBegin(
+            location: location,
+            velocity: velocity,
+            scrollView: trackedScrollView
+        )
+    }
+
+    package func shouldBegin(
+        location: CGPoint,
+        velocity: CGPoint,
+        scrollView: UIScrollView?
+    ) -> Bool {
         let hasMatchingDirection = matchesDirection(velocity)
-        let isAtScrollViewBoundary = trackedScrollView.map {
+        let isAtScrollViewBoundary = scrollView.map {
             isAtBoundary(of: $0)
         } ?? true
         let event = BehaviorEvent.shouldBegin(
             location: location,
             velocity: velocity,
-            scrollView: trackedScrollView
+            scrollView: scrollView
         )
         let shouldBegin = hasMatchingDirection
             && !decisions(for: event).contains(where: isDenied)
