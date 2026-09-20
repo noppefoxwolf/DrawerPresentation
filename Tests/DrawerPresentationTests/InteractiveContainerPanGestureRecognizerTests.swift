@@ -5,8 +5,8 @@ import UIKit
 
 @MainActor
 struct InteractiveContainerPanGestureRecognizerTests {
-    @Test("A two-page UIPageViewController can move from its second page to its first page")
-    func pageViewControllerCanMoveBackWhileTheContainerPanBegins() throws {
+    @Test("A page transition takes priority over the container pan")
+    func pageViewControllerPanTakesPriorityWhenPreviousPageExists() throws {
         let fixture = PageViewControllerFixture()
         fixture.showSecondPage()
 
@@ -26,8 +26,7 @@ struct InteractiveContainerPanGestureRecognizerTests {
             scrollView: scrollView
         )
 
-        // This confirms the bug: the page view can move back, while the drawer pan is also allowed to begin.
-        #expect(shouldBegin)
+        #expect(!shouldBegin)
 
         pageViewController.setViewControllers(
             [fixture.pages[0]],
@@ -35,6 +34,106 @@ struct InteractiveContainerPanGestureRecognizerTests {
             animated: false
         )
         #expect(pageViewController.viewControllers?.first === fixture.pages[0])
+    }
+
+    @Test("The container pan can begin when a page view controller has no previous page")
+    func containerPanBeginsOnTheFirstPage() throws {
+        let fixture = PageViewControllerFixture()
+        fixture.showFirstPage()
+
+        let pageViewController = fixture.pageViewController
+        let firstPage = try #require(pageViewController.viewControllers?.first)
+        let scrollView = try #require(pageViewController.view.descendantScrollViews.first)
+
+        #expect(fixture.dataSource.viewControllerBefore(firstPage) == nil)
+
+        let recognizer = InteractiveContainerPanGestureRecognizer()
+        let shouldBegin = recognizer.shouldBegin(
+            location: CGPoint(x: 160, y: 240),
+            velocity: CGPoint(x: 200, y: 0),
+            scrollView: scrollView
+        )
+
+        #expect(shouldBegin)
+    }
+
+    @Test("A page transition takes priority over the container pan when a next page exists")
+    func pageViewControllerPanTakesPriorityWhenNextPageExists() throws {
+        let fixture = PageViewControllerFixture()
+        fixture.showFirstPage()
+
+        let pageViewController = fixture.pageViewController
+        let firstPage = try #require(pageViewController.viewControllers?.first)
+        let scrollView = try #require(pageViewController.view.descendantScrollViews.first)
+
+        #expect(fixture.dataSource.viewControllerAfter(firstPage) === fixture.pages[1])
+
+        let recognizer = InteractiveContainerPanGestureRecognizer()
+        recognizer.direction = .left
+        let shouldBegin = recognizer.shouldBegin(
+            location: CGPoint(x: 160, y: 240),
+            velocity: CGPoint(x: -200, y: 0),
+            scrollView: scrollView
+        )
+
+        #expect(!shouldBegin)
+    }
+
+    @Test("The container pan can begin on the last page when there is no next page")
+    func containerPanBeginsOnTheLastPage() throws {
+        let fixture = PageViewControllerFixture()
+        fixture.showLastPage()
+
+        let pageViewController = fixture.pageViewController
+        let lastPage = try #require(pageViewController.viewControllers?.first)
+        let scrollView = try #require(pageViewController.view.descendantScrollViews.first)
+
+        #expect(fixture.dataSource.viewControllerAfter(lastPage) == nil)
+
+        let recognizer = InteractiveContainerPanGestureRecognizer()
+        recognizer.direction = .left
+        let shouldBegin = recognizer.shouldBegin(
+            location: CGPoint(x: 160, y: 240),
+            velocity: CGPoint(x: -200, y: 0),
+            scrollView: scrollView
+        )
+
+        #expect(shouldBegin)
+    }
+
+    @Test("The navigation pop gesture takes priority inside a navigation controller")
+    func navigationPopGestureTakesPriority() throws {
+        let navigationController = UINavigationController(
+            rootViewController: UIViewController()
+        )
+        navigationController.pushViewController(UIViewController(), animated: false)
+        navigationController.loadViewIfNeeded()
+
+        let recognizer = InteractiveContainerPanGestureRecognizer()
+        navigationController.view.addGestureRecognizer(recognizer)
+        let popGesture = try #require(navigationController.interactivePopGestureRecognizer)
+
+        #expect(
+            recognizer.gestureRecognizer(
+                recognizer,
+                shouldRequireFailureOf: popGesture
+            )
+        )
+
+        let rootNavigationController = UINavigationController(
+            rootViewController: UIViewController()
+        )
+        rootNavigationController.loadViewIfNeeded()
+        let rootRecognizer = InteractiveContainerPanGestureRecognizer()
+        rootNavigationController.view.addGestureRecognizer(rootRecognizer)
+        let rootPopGesture = try #require(rootNavigationController.interactivePopGestureRecognizer)
+
+        #expect(
+            !rootRecognizer.gestureRecognizer(
+                rootRecognizer,
+                shouldRequireFailureOf: rootPopGesture
+            )
+        )
     }
 }
 
@@ -74,6 +173,24 @@ private final class PageViewControllerFixture {
             direction: .forward,
             animated: false
         )
+        pageViewController.setViewControllers(
+            [pages[1]],
+            direction: .forward,
+            animated: false
+        )
+        pageViewController.view.layoutIfNeeded()
+    }
+
+    func showFirstPage() {
+        pageViewController.setViewControllers(
+            [pages[0]],
+            direction: .forward,
+            animated: false
+        )
+        pageViewController.view.layoutIfNeeded()
+    }
+
+    func showLastPage() {
         pageViewController.setViewControllers(
             [pages[1]],
             direction: .forward,

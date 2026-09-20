@@ -16,7 +16,7 @@ package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecogn
         case down
     }
 
-    var behavior: [Behavior] = [.scrollView, .popInteraction]
+    var behavior: [Behavior] = [.pageViewController, .scrollView, .popInteraction]
     var direction: Direction = .right
     var isDebugLoggingEnabled = false
 
