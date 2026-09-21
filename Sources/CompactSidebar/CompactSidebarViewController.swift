@@ -121,6 +121,7 @@ public final class CompactSidebarViewController: UIViewController {
         configureMaterialBackground()
         configureCollectionView()
         configureLayout()
+        setContentScrollView(collectionView, for: .bottom)
         applySnapshot()
         updateBottomView()
     }
