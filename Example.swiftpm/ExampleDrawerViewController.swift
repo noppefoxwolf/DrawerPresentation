@@ -12,7 +12,7 @@ class ExampleDrawerViewController: UIViewController {
         view.backgroundColor = .systemBackground
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "line.3.horizontal"),
+            image: UIImage(systemName: "sidebar.left"),
             primaryAction: UIAction { [weak self] _ in
                 self?.presentDrawer()
             }
