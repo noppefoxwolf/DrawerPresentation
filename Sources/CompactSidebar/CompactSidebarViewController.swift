@@ -10,16 +10,16 @@ public protocol CompactSidebarViewControllerDelegate: AnyObject {
 
 @MainActor
 public final class CompactSidebarViewController: UIViewController {
-    private let tabs: [UITab]
-    
+    internal let tabs: [UITab]
+
     public weak var delegate: (any CompactSidebarViewControllerDelegate)?
-    
+
     public var selectedTab: UITab? {
         didSet {
             updateSelection(animated: false)
         }
     }
-    
+
     public var headerConfiguration: UIContentConfiguration? {
         didSet {
             if isViewLoaded {
@@ -27,7 +27,7 @@ public final class CompactSidebarViewController: UIViewController {
             }
         }
     }
-    
+
     public var footerConfiguration: UIContentConfiguration? {
         didSet {
             if isViewLoaded {
@@ -35,67 +35,24 @@ public final class CompactSidebarViewController: UIViewController {
             }
         }
     }
-    
+
     public var bottomView: UIView? {
         didSet {
             updateBottomView()
         }
     }
-    
-    private var materialBackgroundView: UIVisualEffectView {
+
+    internal var materialBackgroundView: UIVisualEffectView {
         view as! UIVisualEffectView
     }
-    private let bottomViewContainer = UIView()
-    private let collectionView: UICollectionView
     
-    private lazy var cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Int>(
-        handler: {
-            [weak self] cell, _, tabIndex in
-            guard let self, self.tabs.indices.contains(tabIndex) else { return }
-            
-            let tab = self.tabs[tabIndex]
-            let title = tab.title
-            let image = tab.image
-            
-            cell.accessories = []
-            cell.accessibilityIdentifier = "compactSidebar.tab.\(tabIndex)"
-            cell.configurationUpdateHandler = { cell, state in
-                let foregroundColor: UIColor = state.isSelected ? .white : .label
-                let imageTintColor: UIColor = state.isSelected ? .white : .tintColor
-                
-                var content = UIListContentConfiguration.cell()
-                content.text = title
-                content.secondaryText = tab.subtitle
-                content.image = image
-                content.textProperties.color = foregroundColor
-                content.secondaryTextProperties.color = foregroundColor
-                content.imageProperties.tintColor = imageTintColor
-                
-                var background = UIBackgroundConfiguration.listCell()
-                background.backgroundColor = state.isSelected ? .tintColor : .clear
-                cell.backgroundConfiguration = background
-                cell.contentConfiguration = content
-            }
-            cell.setNeedsUpdateConfiguration()
-        }
-    )
-    
-    private lazy var headerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
-        elementKind: UICollectionView.elementKindSectionHeader,
-        handler: { [weak self] supplementaryView, _, _ in
-            supplementaryView.contentConfiguration = self?.headerConfiguration
-        }
-    )
-    
-    private lazy var footerRegistration = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
-        elementKind: UICollectionView.elementKindSectionFooter,
-        handler: { [weak self] supplementaryView, _, _ in
-            supplementaryView.contentConfiguration = self?.footerConfiguration
-        }
-    )
-    
-    private var dataSource: UICollectionViewDiffableDataSource<Int, Int>!
-    
+    internal let collectionView: UICollectionView
+
+    internal lazy var cellRegistration = makeCellRegistration()
+    internal lazy var headerRegistration = makeHeaderRegistration()
+    internal lazy var footerRegistration = makeFooterRegistration()
+    internal var dataSource: UICollectionViewDiffableDataSource<Int, Int>!
+
     public init(
         tabs: [UITab],
         selectedTab: UITab? = nil,
@@ -108,36 +65,28 @@ public final class CompactSidebarViewController: UIViewController {
         self.headerConfiguration = headerConfiguration
         self.footerConfiguration = footerConfiguration
         self.bottomView = bottomView
-        
+
         var layoutConfiguration = UICollectionLayoutListConfiguration(appearance: .sidebar)
         layoutConfiguration.showsSeparators = false
         layoutConfiguration.backgroundColor = .clear
         layoutConfiguration.headerMode = .supplementary
         layoutConfiguration.footerMode = .supplementary
-        
+
         collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: UICollectionViewCompositionalLayout.list(
                 using: layoutConfiguration
             )
         )
-        
+
         super.init(nibName: nil, bundle: nil)
     }
-    
-    private func makeBackgroundEffectView() -> UIVisualEffectView {
-        if #available(iOS 26.0, *) {
-            UIVisualEffectView(effect: UIGlassEffect(style: .regular))
-        } else {
-            UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
-        }
-    }
-    
+
     @available(iOS 27.1, *)
     public override var preferredVerticalBarBehavior: UIVerticalBarBehavior {
         .disabled
     }
-    
+
     /// Creates a sidebar using the tab and sidebar configuration from a tab bar controller.
     public convenience init(tabBarController: UITabBarController) {
         self.init(
@@ -148,167 +97,27 @@ public final class CompactSidebarViewController: UIViewController {
             bottomView: tabBarController.sidebar.bottomBarView
         )
     }
-    
+
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     isolated deinit {
         bottomView?.removeFromSuperview()
     }
-    
+
     public override func loadView() {
         super.loadView()
         view = makeBackgroundEffectView()
     }
-    
+
     public override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureCollectionView()
         configureLayout()
         setContentScrollView(collectionView, for: .bottom)
         applySnapshot()
         updateBottomView()
-    }
-    
-    private func configureCollectionView() {
-        collectionView.backgroundColor = .clear
-        collectionView.delegate = self
-        collectionView.allowsMultipleSelection = false
-        collectionView.contentInsetAdjustmentBehavior = .automatic
-        if #available(iOS 26.0, *) {
-            collectionView.bottomEdgeEffect.style = .hard
-        }
-        
-        _ = cellRegistration
-        _ = headerRegistration
-        _ = footerRegistration
-        
-        dataSource = UICollectionViewDiffableDataSource<Int, Int>(
-            collectionView: collectionView
-        ) { [weak self] collectionView, indexPath, tabIndex in
-            guard let self else { return nil }
-            return collectionView.dequeueConfiguredReusableCell(
-                using: self.cellRegistration,
-                for: indexPath,
-                item: tabIndex
-            )
-        }
-        
-        dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            guard let self else { return nil }
-            
-            switch kind {
-            case UICollectionView.elementKindSectionHeader:
-                return collectionView.dequeueConfiguredReusableSupplementary(
-                    using: self.headerRegistration,
-                    for: indexPath
-                )
-            case UICollectionView.elementKindSectionFooter:
-                return collectionView.dequeueConfiguredReusableSupplementary(
-                    using: self.footerRegistration,
-                    for: indexPath
-                )
-            default:
-                return nil
-            }
-        }
-    }
-    
-    private func configureLayout() {
-        bottomViewContainer.directionalLayoutMargins = NSDirectionalEdgeInsets(
-            top: 8,
-            leading: 12,
-            bottom: 8,
-            trailing: 12
-        )
-        
-        materialBackgroundView.contentView.addSubview(collectionView)
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: materialBackgroundView.contentView.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: materialBackgroundView.contentView.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: materialBackgroundView.contentView.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: materialBackgroundView.contentView.bottomAnchor),
-        ])
-        
-        if #available(iOS 26.0, *) {
-            materialBackgroundView.contentView.addSubview(bottomViewContainer)
-            bottomViewContainer.translatesAutoresizingMaskIntoConstraints = false
-            let interaction = UIScrollEdgeElementContainerInteraction()
-            interaction.scrollView = collectionView
-            interaction.edge = .bottom
-            bottomViewContainer.addInteraction(interaction)
-        } else {
-            materialBackgroundView.contentView.addSubview(bottomViewContainer)
-            bottomViewContainer.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                bottomViewContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                bottomViewContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: bottomViewContainer.bottomAnchor),
-            ])
-        }
-    }
-    
-    public override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        let bottomInset = bottomViewContainer.isHidden ? 0 : bottomViewContainer.bounds.height
-        guard collectionView.contentInset.bottom != bottomInset else { return }
-        
-        collectionView.contentInset.bottom = bottomInset
-        collectionView.verticalScrollIndicatorInsets.bottom = bottomInset
-    }
-    
-    private func applySnapshot() {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, Int>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(Array(tabs.indices), toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: false)
-        updateSelection(animated: false)
-    }
-    
-    private func updateSelection(animated: Bool) {
-        guard isViewLoaded,
-              let selectedTab,
-              let tabIndex = tabs.firstIndex(where: { $0 === selectedTab }) else {
-            return
-        }
-        
-        collectionView.selectItem(
-            at: IndexPath(item: tabIndex, section: 0),
-            animated: animated,
-            scrollPosition: []
-        )
-    }
-    
-    private func updateBottomView() {
-        guard isViewLoaded else { return }
-        
-        bottomViewContainer.subviews.forEach { $0.removeFromSuperview() }
-        bottomViewContainer.isHidden = bottomView == nil
-        
-        guard let bottomView else { return }
-        
-        bottomViewContainer.addSubview(bottomView)
-        bottomView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            bottomView.topAnchor.constraint(equalTo: bottomViewContainer.layoutMarginsGuide.topAnchor),
-            bottomView.leadingAnchor.constraint(equalTo: bottomViewContainer.layoutMarginsGuide.leadingAnchor),
-            bottomViewContainer.layoutMarginsGuide.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
-            bottomViewContainer.layoutMarginsGuide.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
-        ])
-    }
-}
-
-@MainActor
-extension CompactSidebarViewController: UICollectionViewDelegate {
-    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard tabs.indices.contains(indexPath.item) else { return }
-        
-        let selectedTab = tabs[indexPath.item]
-        self.selectedTab = selectedTab
-        delegate?.compactSidebarViewController(self, didSelect: selectedTab)
     }
 }
