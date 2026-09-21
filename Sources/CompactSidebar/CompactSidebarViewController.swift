@@ -141,6 +141,9 @@ public final class CompactSidebarViewController: UIViewController {
         collectionView.delegate = self
         collectionView.allowsMultipleSelection = false
         collectionView.contentInsetAdjustmentBehavior = .automatic
+        if #available(iOS 26.0, *) {
+            collectionView.bottomEdgeEffect.style = .hard
+        }
 
         cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, Int> {
             [weak self] cell, _, tabIndex in

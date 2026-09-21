@@ -100,8 +100,12 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
             rootViewController: sidebarViewController
         )
         navigationController.setToolbarHidden(false, animated: false)
+        let bottomBarItem = UIBarButtonItem(customView: makeSidebarBottomView())
+        if #available(iOS 26.0, *) {
+            bottomBarItem.hidesSharedBackground = true
+        }
         sidebarViewController.toolbarItems = [
-            UIBarButtonItem(customView: makeSidebarBottomView())
+            bottomBarItem
         ]
 
         let closeButton = UIBarButtonItem(
