@@ -6,7 +6,7 @@ import AppleProductTypes
 let package = Package(
     name: "Playground",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v18)
     ],
     products: [
         .iOSApplication(
@@ -38,7 +38,8 @@ let package = Package(
             name: "AppModule",
             
             dependencies: [
-                .product(name: "DrawerPresentation", package: "DrawerPresentation")
+                .product(name: "DrawerPresentation", package: "DrawerPresentation"),
+                .product(name: "CompactSidebar", package: "DrawerPresentation")
             ],
             
             path: "."

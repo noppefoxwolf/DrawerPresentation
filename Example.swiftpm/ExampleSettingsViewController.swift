@@ -4,7 +4,7 @@ import UIKit
 final class ExampleSettings {
     static let shared = ExampleSettings()
 
-    var movesPresentingView = true
+    var movesPresentingView = false
 
     private init() {}
 }

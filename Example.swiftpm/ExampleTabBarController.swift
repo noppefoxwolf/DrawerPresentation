@@ -1,75 +1,65 @@
 import UIKit
-import SwiftUI
+import CompactSidebar
 import DrawerPresentation
 
 @MainActor
-final class ExampleTabBarController: UITabBarController, DrawerInteractionDelegate, ExampleSideMenuViewControllerDelegate {
+final class ExampleTabBarController: UITabBarController, DrawerInteractionDelegate, CompactSidebarViewControllerDelegate {
     private lazy var drawerInteraction = DrawerInteraction(delegate: self)
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        mode = .tabSidebar
+
         view.addInteraction(drawerInteraction)
 
         let plainViewController = UINavigationController(
             rootViewController: PlainViewController()
         )
-        plainViewController.tabBarItem = UITabBarItem(
-            title: "View",
-            image: UIImage(systemName: "rectangle"),
-            tag: 0
-        )
 
         let scrollViewController = UINavigationController(
             rootViewController: ScrollViewController()
-        )
-        scrollViewController.tabBarItem = UITabBarItem(
-            title: "Scroll",
-            image: UIImage(systemName: "rectangle.split.3x1"),
-            tag: 1
         )
 
         let pageViewController = UINavigationController(
             rootViewController: PageViewController()
         )
-        pageViewController.tabBarItem = UITabBarItem(
-            title: "Pages",
-            image: UIImage(systemName: "square.stack.3d.forward.dottedline"),
-            tag: 2
-        )
 
         let splitViewController = ExampleSplitViewController()
-        splitViewController.tabBarItem = UITabBarItem(
-            title: "Split",
-            image: UIImage(systemName: "rectangle.split.2x1"),
-            tag: 3
-        )
 
         let nestedCollectionViewController = UINavigationController(
             rootViewController: NestedCollectionViewController()
-        )
-        nestedCollectionViewController.tabBarItem = UITabBarItem(
-            title: "Nested",
-            image: UIImage(systemName: "rectangle.stack"),
-            tag: 4
         )
 
         let settingsViewController = UINavigationController(
             rootViewController: ExampleSettingsViewController()
         )
-        settingsViewController.tabBarItem = UITabBarItem(
-            title: "Settings",
-            image: UIImage(systemName: "gearshape"),
-            tag: 5
-        )
 
-        viewControllers = [
-            plainViewController,
-            scrollViewController,
-            pageViewController,
-            splitViewController,
-            nestedCollectionViewController,
-            settingsViewController,
+        tabs = [
+            makeTab(title: "View", imageName: "rectangle", identifier: "view", viewController: plainViewController),
+            makeTab(title: "Scroll", imageName: "rectangle.split.3x1", identifier: "scroll", viewController: scrollViewController),
+            makeTab(title: "Pages", imageName: "square.stack.3d.forward.dottedline", identifier: "pages", viewController: pageViewController),
+            makeTab(title: "Split", imageName: "rectangle.split.2x1", identifier: "split", viewController: splitViewController),
+            makeTab(title: "Nested", imageName: "rectangle.stack", identifier: "nested", viewController: nestedCollectionViewController),
+            makeTab(title: "Settings", imageName: "gearshape", identifier: "settings", viewController: settingsViewController),
         ]
+
+        configureSidebar()
+    }
+
+    private func makeTab(
+        title: String,
+        imageName: String,
+        identifier: String,
+        viewController: UIViewController
+    ) -> UITab {
+        UITab(
+            title: title,
+            image: UIImage(systemName: imageName),
+            identifier: identifier
+        ) { _ in
+            viewController
+        }
     }
 
     func presentDrawer() {
@@ -96,31 +86,51 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         _ interaction: DrawerInteraction,
         presentingViewControllerFor viewController: UIViewController
     ) -> UIViewController? {
-        let sideMenuViewController = ExampleSideMenuViewController()
-        sideMenuViewController.delegate = self
-        return sideMenuViewController
+        let sidebarViewController = CompactSidebarViewController(tabBarController: self)
+        sidebarViewController.delegate = self
+        return sidebarViewController
     }
 
-    func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
+    func compactSidebarViewController(
+        _ viewController: CompactSidebarViewController,
+        didSelect tab: UITab
+    ) {
+        selectedTab = tab
         viewController.dismiss(animated: true)
-        activeNavigationController?.pushViewController(
-            UIHostingController(rootView: Text("Child View")),
-            animated: true
-        )
     }
 
-    private var activeNavigationController: UINavigationController? {
-        guard let selectedViewController else { return nil }
-
-        if let navigationController = selectedViewController as? UINavigationController {
-            return navigationController
-        }
-
-        if let splitViewController = selectedViewController as? UISplitViewController {
-            return splitViewController.viewController(for: .secondary) as? UINavigationController
-                ?? splitViewController.viewController(for: .primary) as? UINavigationController
-        }
-
-        return selectedViewController.navigationController
+    private var sidebarHeaderConfiguration: UIContentConfiguration {
+        var configuration = UIListContentConfiguration.sidebarHeader()
+        configuration.text = "SidebarSample"
+        configuration.secondaryText = "DrawerPresentation"
+        configuration.image = UIImage(systemName: "sidebar.left")
+        configuration.imageProperties.tintColor = UIColor.systemBlue
+        return configuration
     }
+
+    private var sidebarFooterConfiguration: UIContentConfiguration {
+        var configuration = UIListContentConfiguration.plainFooter()
+        configuration.text = "Swipe right to close"
+        return configuration
+    }
+
+    private func configureSidebar() {
+        sidebar.headerContentConfiguration = sidebarHeaderConfiguration
+        sidebar.footerContentConfiguration = sidebarFooterConfiguration
+        sidebar.bottomBarView = makeSidebarBottomView()
+    }
+
+    private func makeSidebarBottomView() -> UIView {
+        let bottomView = ExampleSidebarBottomView()
+        bottomView.action = { [weak self] in
+            self?.closeSidebar()
+        }
+        return bottomView
+    }
+
+    @objc
+    private func closeSidebar() {
+        presentedViewController?.dismiss(animated: true)
+    }
+
 }

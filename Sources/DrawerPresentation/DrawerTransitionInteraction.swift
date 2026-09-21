@@ -30,12 +30,10 @@ open class DrawerInteraction: NSObject, UIInteraction {
     }
     
     public func didMove(to view: UIView?) {
-        #if os(iOS)
         presentPanGesture.addTarget(self, action: #selector(onPan))
         presentPanGesture.maximumNumberOfTouches = 1
         presentPanGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(presentPanGesture)
-        #endif
     }
     
     public func present() {
@@ -53,13 +51,9 @@ open class DrawerInteraction: NSObject, UIInteraction {
         if isInteractiveTransitoionEnabled {
             transitionController?.interactiveTransition = UIPercentDrivenInteractiveTransition()
         }
-        #if os(iOS)
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = transitionController
-        #endif
-        if #available(iOS 17.0, *) {
-            vc.traitOverrides.userInterfaceLevel = .elevated
-        }
+        vc.traitOverrides.userInterfaceLevel = .elevated
         parent.present(vc, animated: true)
     }
     
