@@ -1,19 +1,19 @@
 import CompactSidebar
-import DrawerPresentation
+import SidebarPresentation
 import UIKit
 
 @MainActor
-final class ExampleTabBarController: UITabBarController, DrawerInteractionDelegate,
+final class ExampleTabBarController: UITabBarController, SidebarInteractionDelegate,
     CompactSidebarViewControllerDelegate
 {
-    private lazy var drawerInteraction = DrawerInteraction(delegate: self)
+    private lazy var sidebarInteraction = SidebarInteraction(delegate: self)
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         mode = .tabSidebar
 
-        view.addInteraction(drawerInteraction)
+        view.addInteraction(sidebarInteraction)
 
         let plainViewController = UINavigationController(
             rootViewController: PlainViewController()
@@ -94,32 +94,32 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         }
     }
 
-    func presentDrawer() {
-        updateDrawerSettings()
-        drawerInteraction.present()
+    func presentSidebar() {
+        updateSidebarSettings()
+        sidebarInteraction.present()
     }
 
-    func updateDrawerSettings() {
-        drawerInteraction.movesPresentingView = ExampleSettings.shared.movesPresentingView
+    func updateSidebarSettings() {
+        sidebarInteraction.movesPresentingView = ExampleSettings.shared.movesPresentingView
     }
 
-    func viewController(for interaction: DrawerInteraction) -> UIViewController {
+    func viewController(for interaction: SidebarInteraction) -> UIViewController {
         self
     }
 
-    func drawerInteraction(
-        _ interaction: DrawerInteraction,
-        widthForDrawer drawerViewController: UIViewController
+    func sidebarInteraction(
+        _ interaction: SidebarInteraction,
+        widthForSidebar sidebarViewController: UIViewController
     ) -> CGFloat {
-        DrawerTransitionController.defaultDrawerWidth
+        SidebarTransitionController.defaultSidebarWidth
     }
 
-    func drawerInteraction(
-        _ interaction: DrawerInteraction,
+    func sidebarInteraction(
+        _ interaction: SidebarInteraction,
         presentingViewControllerFor viewController: UIViewController
     ) -> UIViewController? {
         // The system sidebar owns its bottom view. Create a separate instance
-        // for the drawer instead of moving the same UIView between containers.
+        // for the sidebar instead of moving the same UIView between containers.
         // iOS 26 and later use the scroll edge container; older iOS versions
         // fall back to the navigation controller's toolbar.
         let bottomView: UIView?
@@ -173,7 +173,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
     private var sidebarHeaderConfiguration: UIContentConfiguration {
         var configuration = UIListContentConfiguration.header()
         configuration.text = "SidebarSample"
-        configuration.secondaryText = "DrawerPresentation"
+        configuration.secondaryText = "SidebarPresentation"
         configuration.image = UIImage(systemName: "sidebar.left")
         configuration.imageProperties.tintColor = UIColor.systemBlue
         return configuration

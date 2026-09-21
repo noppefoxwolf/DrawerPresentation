@@ -1,6 +1,6 @@
-# DrawerPresentation
+# SidebarPresentation
 
-DrawerPresentation is a library that provides a customizable drawer presentation style for iOS applications.
+SidebarPresentation is a library that provides a customizable sidebar presentation style for iOS applications.
 
 ![](https://github.com/noppefoxwolf/DrawerPresentation/blob/main/.github/example.gif)
 
@@ -20,21 +20,21 @@ DrawerPresentation is a library that provides a customizable drawer presentation
 ```swift
 
 // Add Interaction
-let interaction = DrawerInteraction(delegate: self)
+let interaction = SidebarInteraction(delegate: self)
 interaction.movesPresentingView = false
 view.addInteraction(interaction)
 
 // Delegate Example
-extension ViewController: DrawerInteractionDelegate {
-    func viewController(for interaction: DrawerInteraction) -> UIViewController {
+extension ViewController: SidebarInteractionDelegate {
+    func viewController(for interaction: SidebarInteraction) -> UIViewController {
         self
     }
     
-    func drawerInteraction(_ interaction: DrawerInteraction, widthForDrawer drawerViewController: UIViewController) -> CGFloat {
-        DrawerTransitionController.defaultDrawerWidth
+    func sidebarInteraction(_ interaction: SidebarInteraction, widthForSidebar sidebarViewController: UIViewController) -> CGFloat {
+        SidebarTransitionController.defaultSidebarWidth
     }
     
-    func drawerInteraction(_ interaction: DrawerInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
+    func sidebarInteraction(_ interaction: SidebarInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
         UIHostingController(rootView: Text("Interactive side menu"))
     }
 }
@@ -43,7 +43,7 @@ extension ViewController: DrawerInteractionDelegate {
 interaction.present()
 
 // Using transitioningDelegate directly
-self.transitionController = DrawerTransitionController(
+self.transitionController = SidebarTransitionController(
     movesPresentingView: false
 )
 let vc = UIHostingController(rootView: Text("Hello, World!!"))
@@ -63,14 +63,14 @@ This repository is an iOS Swift package. Use `xcodebuild` with an iOS Simulator 
 List available simulator destinations:
 
 ```sh
-xcodebuild -scheme DrawerPresentation -sdk iphonesimulator -showdestinations
+xcodebuild -scheme SidebarPresentation -sdk iphonesimulator -showdestinations
 ```
 
 Build for the iOS Simulator:
 
 ```sh
 xcodebuild \
-    -scheme DrawerPresentation \
+    -scheme SidebarPresentation \
     -destination 'generic/platform=iOS Simulator' \
     build
 ```
@@ -79,7 +79,7 @@ Run tests on a specific available simulator:
 
 ```sh
 xcodebuild \
-    -scheme DrawerPresentation \
+    -scheme SidebarPresentation \
     -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
     test
 ```

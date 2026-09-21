@@ -1,49 +1,49 @@
-import DrawerPresentation
+import SidebarPresentation
 import SwiftUI
 import UIKit
 
 @MainActor
-class ExampleDrawerViewController: UIViewController {
-    private let manualTransitionDelegate = DrawerTransitionController()
+class ExampleSidebarViewController: UIViewController {
+    private let manualTransitionDelegate = SidebarTransitionController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        applyDrawerSettings()
+        applySidebarSettings()
         view.backgroundColor = .systemBackground
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "sidebar.left"),
             primaryAction: UIAction { [weak self] _ in
-                self?.presentDrawer()
+                self?.presentSidebar()
             }
         )
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             systemItem: .search,
             primaryAction: UIAction { [weak self] _ in
-                self?.presentDrawerManually()
+                self?.presentSidebarManually()
             }
         )
     }
 
-    func presentDrawerManually() {
-        applyDrawerSettings()
+    func presentSidebarManually() {
+        applySidebarSettings()
         let viewController = UIHostingController(rootView: Text("Presented manually"))
         viewController.modalPresentationStyle = .custom
         viewController.transitioningDelegate = manualTransitionDelegate
         present(viewController, animated: true)
     }
 
-    private func presentDrawer() {
-        (tabBarController as? ExampleTabBarController)?.presentDrawer()
+    private func presentSidebar() {
+        (tabBarController as? ExampleTabBarController)?.presentSidebar()
     }
 
-    private func applyDrawerSettings() {
+    private func applySidebarSettings() {
         manualTransitionDelegate.movesPresentingView = ExampleSettings.shared.movesPresentingView
     }
 }
 
 @MainActor
-final class PlainViewController: ExampleDrawerViewController {
+final class PlainViewController: ExampleSidebarViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "View"
@@ -56,7 +56,7 @@ final class PlainViewController: ExampleDrawerViewController {
         let detailLabel = UILabel()
         detailLabel.font = .preferredFont(forTextStyle: .body)
         detailLabel.textColor = .secondaryLabel
-        detailLabel.text = "Swipe right anywhere to open the drawer."
+        detailLabel.text = "Swipe right anywhere to open the sidebar."
         detailLabel.textAlignment = .center
         detailLabel.numberOfLines = 0
 
@@ -74,7 +74,7 @@ final class PlainViewController: ExampleDrawerViewController {
 }
 
 @MainActor
-final class PageViewController: ExampleDrawerViewController, UIPageViewControllerDataSource {
+final class PageViewController: ExampleSidebarViewController, UIPageViewControllerDataSource {
     private let pages = [
         ExamplePageViewController(title: "Page 1", color: .systemBlue),
         ExamplePageViewController(title: "Page 2", color: .systemOrange),

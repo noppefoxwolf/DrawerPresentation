@@ -4,13 +4,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "DrawerPresentation",
+    name: "SidebarPresentation",
     platforms: [.iOS(.v18)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "DrawerPresentation",
-            targets: ["DrawerPresentation"]
+            name: "SidebarPresentation",
+            targets: ["SidebarPresentation"]
         ),
         .library(
             name: "CompactSidebar",
@@ -24,16 +24,16 @@ let package = Package(
             name: "InteractiveContainerPanGestureRecognizer"
         ),
         .target(
-            name: "DrawerPresentation",
+            name: "SidebarPresentation",
             dependencies: ["InteractiveContainerPanGestureRecognizer"]
         ),
         .target(
             name: "CompactSidebar"
         ),
         .testTarget(
-            name: "DrawerPresentationTests",
+            name: "SidebarPresentationTests",
             dependencies: [
-                "DrawerPresentation",
+                "SidebarPresentation",
                 "InteractiveContainerPanGestureRecognizer",
             ]
         ),

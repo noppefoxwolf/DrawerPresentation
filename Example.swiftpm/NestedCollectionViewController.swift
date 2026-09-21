@@ -1,7 +1,7 @@
 import UIKit
 
 @MainActor
-final class NestedCollectionViewController: ExampleDrawerViewController {
+final class NestedCollectionViewController: ExampleSidebarViewController {
     private let parentCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -22,7 +22,7 @@ final class NestedCollectionViewController: ExampleDrawerViewController {
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
         label.text =
-            "Swipe left to move the parent to page 2.\nThen swipe right inside the child list: the parent should move back and the drawer should stay closed.\nOn page 1, swipe right inside the child list to open the drawer."
+            "Swipe left to move the parent to page 2.\nThen swipe right inside the child list: the parent should move back and the sidebar should stay closed.\nOn page 1, swipe right inside the child list to open the sidebar."
         return label
     }()
 

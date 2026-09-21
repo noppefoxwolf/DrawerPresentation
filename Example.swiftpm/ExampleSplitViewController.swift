@@ -31,7 +31,7 @@ final class ExampleSplitViewController: UISplitViewController {
 }
 
 @MainActor
-private final class SplitPrimaryViewController: ExampleDrawerViewController {
+private final class SplitPrimaryViewController: ExampleSidebarViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Primary"
@@ -46,7 +46,7 @@ private final class SplitPrimaryViewController: ExampleDrawerViewController {
         let detailLabel = UILabel()
         detailLabel.font = .preferredFont(forTextStyle: .body)
         detailLabel.textColor = .secondaryLabel
-        detailLabel.text = "The drawer gesture is attached to the tab bar controller."
+        detailLabel.text = "The sidebar gesture is attached to the tab bar controller."
         detailLabel.textAlignment = .center
         detailLabel.numberOfLines = 0
 
@@ -77,7 +77,7 @@ private final class SplitPrimaryViewController: ExampleDrawerViewController {
 }
 
 @MainActor
-private final class SplitSupplementaryViewController: ExampleDrawerViewController {
+private final class SplitSupplementaryViewController: ExampleSidebarViewController {
     private let tiledSplitBehaviorSwitch = UISwitch()
     private let twoBesideSecondarySwitch = UISwitch()
 
@@ -188,7 +188,7 @@ private final class SplitSupplementaryViewController: ExampleDrawerViewControlle
 }
 
 @MainActor
-private final class SplitSecondaryViewController: ExampleDrawerViewController {
+private final class SplitSecondaryViewController: ExampleSidebarViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Secondary"
@@ -203,7 +203,7 @@ private final class SplitSecondaryViewController: ExampleDrawerViewController {
         let detailLabel = UILabel()
         detailLabel.font = .preferredFont(forTextStyle: .body)
         detailLabel.textColor = .secondaryLabel
-        detailLabel.text = "The drawer gesture is also attached to the tab bar controller."
+        detailLabel.text = "The sidebar gesture is also attached to the tab bar controller."
         detailLabel.textAlignment = .center
         detailLabel.numberOfLines = 0
 

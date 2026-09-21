@@ -1,8 +1,8 @@
 import UIKit
 
 @MainActor
-final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
-    let drawerWidth: CGFloat
+final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+    let sidebarWidth: CGFloat
     let movesPresentingView: Bool
     var isPresenting: Bool = true
     var isInteractiveTransition = false
@@ -13,8 +13,8 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     private weak var preparedFromView: UIView?
     private weak var preparedToView: UIView?
 
-    init(drawerWidth: CGFloat, movesPresentingView: Bool) {
-        self.drawerWidth = drawerWidth
+    init(sidebarWidth: CGFloat, movesPresentingView: Bool) {
+        self.sidebarWidth = sidebarWidth
         self.movesPresentingView = movesPresentingView
         super.init()
     }
@@ -54,7 +54,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             ? transitionDuration(using: transitionContext)
             : 0
         let curve: UIView.AnimationCurve = isInteractiveTransition ? .linear : .easeOut
-        let drawerWidth = self.drawerWidth
+        let sidebarWidth = self.sidebarWidth
         let movesPresentingView = self.movesPresentingView
         let isPresenting = self.isPresenting
 
@@ -66,14 +66,14 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 views.toView.transform = .identity
                 if movesPresentingView {
                     views.fromView.layer.transform = CATransform3DMakeTranslation(
-                        drawerWidth,
+                        sidebarWidth,
                         0,
                         0
                     )
                 }
             } else {
                 views.fromView.transform = CGAffineTransform(
-                    translationX: -drawerWidth,
+                    translationX: -sidebarWidth,
                     y: 0
                 )
                 if movesPresentingView {
@@ -87,7 +87,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                     transitionContext,
                     fromView: views.fromView,
                     toView: views.toView,
-                    drawerWidth: drawerWidth,
+                    sidebarWidth: sidebarWidth,
                     movesPresentingView: movesPresentingView,
                     isPresenting: isPresenting
                 )
@@ -133,7 +133,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 containerView.addSubview(toView)
             }
             toView.frame = transitionContext.finalFrame(for: toViewController)
-            toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
+            toView.transform = CGAffineTransform(translationX: -sidebarWidth, y: 0)
         }
 
         preparedFromView = fromView
@@ -145,7 +145,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         _ transitionContext: any UIViewControllerContextTransitioning,
         fromView: UIView,
         toView: UIView,
-        drawerWidth: CGFloat,
+        sidebarWidth: CGFloat,
         movesPresentingView: Bool,
         isPresenting: Bool
     ) {
@@ -161,7 +161,7 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
                 fromView.transform = .identity
                 if movesPresentingView {
                     toView.layer.transform = CATransform3DMakeTranslation(
-                        drawerWidth,
+                        sidebarWidth,
                         0,
                         0
                     )

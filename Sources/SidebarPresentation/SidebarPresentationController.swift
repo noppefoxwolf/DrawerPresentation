@@ -1,8 +1,8 @@
 import UIKit
 
 @MainActor
-final class DrawerPresentationController: UIPresentationController {
-    private let drawerWidth: CGFloat
+final class SidebarPresentationController: UIPresentationController {
+    private let sidebarWidth: CGFloat
     private let dimmingView = DimmingView()
     private let dismissPanGesture = UIPanGestureRecognizer()
 
@@ -11,9 +11,9 @@ final class DrawerPresentationController: UIPresentationController {
     init(
         presentedViewController: UIViewController,
         presenting presentingViewController: UIViewController?,
-        drawerWidth: CGFloat
+        sidebarWidth: CGFloat
     ) {
-        self.drawerWidth = drawerWidth
+        self.sidebarWidth = sidebarWidth
         super
             .init(
                 presentedViewController: presentedViewController,
@@ -33,7 +33,7 @@ final class DrawerPresentationController: UIPresentationController {
         return CGRect(
             x: containerView.bounds.minX,
             y: containerView.bounds.minY,
-            width: drawerWidth,
+            width: sidebarWidth,
             height: containerView.bounds.height
         )
     }

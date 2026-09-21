@@ -1,7 +1,7 @@
 import UIKit
 
 @MainActor
-final class ScrollViewController: ExampleDrawerViewController {
+final class ScrollViewController: ExampleSidebarViewController {
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
 
@@ -65,7 +65,7 @@ private final class ScrollCardView: UIView {
         detailLabel.textColor = .secondaryLabel
         detailLabel.numberOfLines = 0
         detailLabel.text =
-            "Swipe horizontally to move the scroll view.\nTry opening the drawer at the left edge."
+            "Swipe horizontally to move the scroll view.\nTry opening the sidebar at the left edge."
 
         let stackView = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         stackView.axis = .vertical

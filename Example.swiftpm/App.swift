@@ -1,4 +1,4 @@
-import DrawerPresentation
+import SidebarPresentation
 import SwiftUI
 
 @main

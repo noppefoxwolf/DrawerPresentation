@@ -1,17 +1,17 @@
 import UIKit
 
 @MainActor
-public final class DrawerTransitionController: NSObject, UIViewControllerTransitioningDelegate {
-    public static let defaultDrawerWidth: CGFloat = 320
+public final class SidebarTransitionController: NSObject, UIViewControllerTransitioningDelegate {
+    public static let defaultSidebarWidth: CGFloat = 320
 
-    let drawerWidth: CGFloat
-    /// Whether the presenting view moves to the right while the drawer is shown.
+    let sidebarWidth: CGFloat
+    /// Whether the presenting view moves to the right while the sidebar is shown.
     public var movesPresentingView: Bool
-    var animator: DrawerTransitionAnimator? = nil
+    var animator: SidebarTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
 
-    public init(drawerWidth: CGFloat = 320, movesPresentingView: Bool = true) {
-        self.drawerWidth = drawerWidth
+    public init(sidebarWidth: CGFloat = 320, movesPresentingView: Bool = true) {
+        self.sidebarWidth = sidebarWidth
         self.movesPresentingView = movesPresentingView
     }
 
@@ -20,8 +20,8 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         presenting: UIViewController,
         source: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        let animator = DrawerTransitionAnimator(
-            drawerWidth: drawerWidth,
+        let animator = SidebarTransitionAnimator(
+            sidebarWidth: sidebarWidth,
             movesPresentingView: movesPresentingView
         )
         animator.onAnimationEnded = { [weak self] _ in
@@ -38,10 +38,10 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         presenting: UIViewController?,
         source: UIViewController
     ) -> UIPresentationController? {
-        let presentationController = DrawerPresentationController(
+        let presentationController = SidebarPresentationController(
             presentedViewController: presented,
             presenting: presenting,
-            drawerWidth: drawerWidth
+            sidebarWidth: sidebarWidth
         )
         presentationController.onDismissGesture = { [weak self, weak presented] gesture in
             self?.handleDismissGesture(gesture, presented: presented)
@@ -52,7 +52,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     public func interactionControllerForPresentation(
         using animator: any UIViewControllerAnimatedTransitioning
     ) -> (any UIViewControllerInteractiveTransitioning)? {
-        guard let animator = animator as? DrawerTransitionAnimator,
+        guard let animator = animator as? SidebarTransitionAnimator,
             animator === self.animator
         else {
             return nil
@@ -71,7 +71,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     public func interactionControllerForDismissal(
         using animator: any UIViewControllerAnimatedTransitioning
     ) -> (any UIViewControllerInteractiveTransitioning)? {
-        guard let animator = animator as? DrawerTransitionAnimator,
+        guard let animator = animator as? SidebarTransitionAnimator,
             animator === self.animator
         else {
             return nil
@@ -83,7 +83,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         _ gesture: UIPanGestureRecognizer,
         presented: UIViewController?
     ) {
-        let width = max(drawerWidth, 1)
+        let width = max(sidebarWidth, 1)
         let translation = gesture.translation(in: gesture.view).x
         let fractionCompleted = min(max(-translation / width, 0), 1)
 

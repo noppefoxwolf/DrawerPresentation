@@ -2,8 +2,8 @@ import InteractiveContainerPanGestureRecognizer
 import UIKit
 
 @MainActor
-open class DrawerInteraction: NSObject, UIInteraction {
-    public weak var delegate: (any DrawerInteractionDelegate)? = nil
+open class SidebarInteraction: NSObject, UIInteraction {
+    public weak var delegate: (any SidebarInteractionDelegate)? = nil
 
     public var isEnabled: Bool = true {
         didSet {
@@ -11,14 +11,14 @@ open class DrawerInteraction: NSObject, UIInteraction {
         }
     }
 
-    /// Whether the presenting view moves to the right while the drawer is shown.
-    public var movesPresentingView = true
+    /// Whether the presenting view moves to the right while the sidebar is shown.
+    public var movesPresentingView = false
 
     let presentPanGesture = InteractiveContainerPanGestureRecognizer()
 
-    var transitionController: DrawerTransitionController? = nil
+    var transitionController: SidebarTransitionController? = nil
 
-    public init(delegate: any DrawerInteractionDelegate) {
+    public init(delegate: any SidebarInteractionDelegate) {
         self.delegate = delegate
         super.init()
         presentPanGesture.addTarget(self, action: #selector(onPan))
@@ -43,14 +43,14 @@ open class DrawerInteraction: NSObject, UIInteraction {
 
     private func present(isInteractiveTransitionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
-        guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else {
+        guard let vc = delegate?.sidebarInteraction(self, presentingViewControllerFor: parent) else {
             return
         }
-        let drawerWidth =
-            delegate?.drawerInteraction(self, widthForDrawer: vc)
-            ?? DrawerTransitionController.defaultDrawerWidth
-        transitionController = DrawerTransitionController(
-            drawerWidth: drawerWidth,
+        let sidebarWidth =
+            delegate?.sidebarInteraction(self, widthForSidebar: vc)
+            ?? SidebarTransitionController.defaultSidebarWidth
+        transitionController = SidebarTransitionController(
+            sidebarWidth: sidebarWidth,
             movesPresentingView: movesPresentingView
         )
         if isInteractiveTransitionEnabled {
@@ -78,7 +78,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
 
             let x = gesture.translation(in: gesture.view).x
             let width = max(
-                transitionController?.drawerWidth ?? DrawerTransitionController.defaultDrawerWidth,
+                transitionController?.sidebarWidth ?? SidebarTransitionController.defaultSidebarWidth,
                 1
             )
             let fractionCompleted = min(max(x / width, 0), 1)
@@ -90,7 +90,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
             }
 
             let width = max(
-                transitionController?.drawerWidth ?? DrawerTransitionController.defaultDrawerWidth,
+                transitionController?.sidebarWidth ?? SidebarTransitionController.defaultSidebarWidth,
                 1
             )
             let x = gesture.translation(in: gesture.view).x

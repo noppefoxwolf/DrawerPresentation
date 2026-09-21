@@ -22,7 +22,7 @@ final class ExampleSettingsViewController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "sidebar.left"),
             primaryAction: UIAction { [weak self] _ in
-                (self?.tabBarController as? ExampleTabBarController)?.presentDrawer()
+                (self?.tabBarController as? ExampleTabBarController)?.presentSidebar()
             }
         )
 
@@ -36,7 +36,7 @@ final class ExampleSettingsViewController: UIViewController {
 
         let row = makeSwitchRow(
             title: "Move presenting view",
-            detail: "Move the current screen along with the drawer.",
+            detail: "Move the current screen along with the sidebar.",
             control: movesPresentingViewSwitch
         )
 
@@ -86,6 +86,6 @@ final class ExampleSettingsViewController: UIViewController {
     @objc
     private func movesPresentingViewSwitchChanged(_ sender: UISwitch) {
         settings.movesPresentingView = sender.isOn
-        (tabBarController as? ExampleTabBarController)?.updateDrawerSettings()
+        (tabBarController as? ExampleTabBarController)?.updateSidebarSettings()
     }
 }
