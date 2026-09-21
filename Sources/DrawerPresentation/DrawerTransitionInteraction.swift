@@ -21,26 +21,27 @@ open class DrawerInteraction: NSObject, UIInteraction {
     public init(delegate: any DrawerInteractionDelegate) {
         self.delegate = delegate
         super.init()
+        presentPanGesture.addTarget(self, action: #selector(onPan))
     }
     
     public weak var view: UIView? = nil
     
     public func willMove(to view: UIView?) {
-        self.view = view
+        self.view?.removeGestureRecognizer(presentPanGesture)
     }
-    
+
     public func didMove(to view: UIView?) {
-        presentPanGesture.addTarget(self, action: #selector(onPan))
+        self.view = view
         presentPanGesture.maximumNumberOfTouches = 1
         presentPanGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(presentPanGesture)
     }
     
     public func present() {
-        present(isInteractiveTransitoionEnabled: false)
+        present(isInteractiveTransitionEnabled: false)
     }
-    
-    private func present(isInteractiveTransitoionEnabled: Bool) {
+
+    private func present(isInteractiveTransitionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
         let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc) ?? 300
@@ -48,7 +49,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
             drawerWidth: drawerWidth,
             movesPresentingView: movesPresentingView
         )
-        if isInteractiveTransitoionEnabled {
+        if isInteractiveTransitionEnabled {
             transitionController?.interactiveTransition = UIPercentDrivenInteractiveTransition()
         }
         vc.modalPresentationStyle = .custom
@@ -61,29 +62,38 @@ open class DrawerInteraction: NSObject, UIInteraction {
     private func onPan(_ gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
-            break
+            if transitionController?.interactiveTransition == nil {
+                present(isInteractiveTransitionEnabled: true)
+                transitionController?.interactiveTransition?.completionCurve = .easeOut
+            }
+
         case .changed:
             if transitionController?.interactiveTransition == nil {
-                present(isInteractiveTransitoionEnabled: true)
-                transitionController?.interactiveTransition?.completionCurve = .linear
-                transitionController?.interactiveTransition?.update(0)
-            } else {
-                let x = gesture.translation(in: gesture.view).x
-                let presentedViewController = delegate?.viewController(for: self)
-                let width = presentedViewController.map { delegate?.drawerInteraction(self, widthForDrawer: $0) }?.flatMap({ $0 }) ?? 300.0
-                let percentComplete = max(x / width, 0)
-                transitionController?.interactiveTransition?.update(percentComplete)
+                return
             }
+
+            let x = gesture.translation(in: gesture.view).x
+            let width = max(transitionController?.drawerWidth ?? 300, 1)
+            let fractionCompleted = min(max(x / width, 0), 1)
+            transitionController?.interactiveTransition?.update(fractionCompleted)
+
         case .ended:
-            if gesture.velocity(in: gesture.view).x > 0 {
-                transitionController?.interactiveTransition?.finish()
-            } else {
-                transitionController?.interactiveTransition?.cancel()
+            guard let interactiveTransition = transitionController?.interactiveTransition else {
+                return
             }
-            transitionController?.interactiveTransition = nil
+
+            let width = max(transitionController?.drawerWidth ?? 300, 1)
+            let x = gesture.translation(in: gesture.view).x
+            let fractionCompleted = min(max(x / width, 0), 1)
+            if gesture.velocity(in: gesture.view).x > 0 || fractionCompleted >= 0.5 {
+                interactiveTransition.finish()
+            } else {
+                interactiveTransition.cancel()
+            }
+
         case .cancelled:
             transitionController?.interactiveTransition?.cancel()
-            transitionController?.interactiveTransition = nil
+
         default:
             break
         }
