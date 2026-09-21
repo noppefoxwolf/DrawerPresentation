@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 public final class DrawerTransitionController: NSObject, UIViewControllerTransitioningDelegate {
     let drawerWidth: CGFloat
     /// Whether the presenting view moves to the right while the drawer is shown.
@@ -17,57 +18,87 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
             drawerWidth: drawerWidth,
             movesPresentingView: movesPresentingView
         )
-        animator.dimmingTapInteraction = TapActionInteraction(action: { [weak presented] in
-            presented?.dismiss(animated: true)
-        })
-        animator.onDismissGesture = { [weak self, weak presented] (gesture, drawerWidth) in
-            guard let self else { return }
-            switch gesture.state {
-            case .began:
-                self.interactiveTransition = UIPercentDrivenInteractiveTransition()
-                self.interactiveTransition?.completionCurve = .linear
-                presented?.dismiss(animated: true)
-            case .changed:
-                let x = gesture.translation(in: gesture.view).x
-                let percentComplete = -min(x / drawerWidth, 0)
-                self.interactiveTransition?.update(percentComplete)
-            case .ended:
-                if gesture.velocity(in: gesture.view).x < 0 {
-                    self.interactiveTransition?.finish()
-                } else {
-                    self.interactiveTransition?.cancel()
-                }
-                self.interactiveTransition = nil
-            case .cancelled:
-                self.interactiveTransition?.cancel()
-                self.interactiveTransition = nil
-            default:
-                break
-            }
+        animator.onAnimationEnded = { [weak self] _ in
+            self?.interactiveTransition = nil
         }
+        animator.isInteractiveTransition = interactiveTransition != nil
         animator.isPresenting = true
         self.animator = animator
         return animator
     }
+
+    public func presentationController(
+        forPresented presented: UIViewController,
+        presenting: UIViewController?,
+        source: UIViewController
+    ) -> UIPresentationController? {
+        let presentationController = DrawerPresentationController(
+            presentedViewController: presented,
+            presenting: presenting,
+            drawerWidth: drawerWidth
+        )
+        presentationController.onDismissGesture = { [weak self, weak presented] gesture in
+            self?.handleDismissGesture(gesture, presented: presented)
+        }
+        return presentationController
+    }
     
     public func interactionControllerForPresentation(using animator: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
-        if animator is DrawerTransitionAnimator {
-            return interactiveTransition
-        } else {
+        guard let animator = animator as? DrawerTransitionAnimator,
+              animator === self.animator else {
             return nil
         }
+        return interactiveTransition
     }
     
     public func animationController(forDismissed dismissed: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
         animator?.isPresenting = false
+        animator?.isInteractiveTransition = interactiveTransition != nil
         return animator
     }
     
     public func interactionControllerForDismissal(using animator: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
-        if animator is DrawerTransitionAnimator {
-            return interactiveTransition
-        } else {
+        guard let animator = animator as? DrawerTransitionAnimator,
+              animator === self.animator else {
             return nil
+        }
+        return interactiveTransition
+    }
+
+    private func handleDismissGesture(
+        _ gesture: UIPanGestureRecognizer,
+        presented: UIViewController?
+    ) {
+        let width = max(drawerWidth, 1)
+        let translation = gesture.translation(in: gesture.view).x
+        let fractionCompleted = min(max(-translation / width, 0), 1)
+
+        switch gesture.state {
+        case .began:
+            guard interactiveTransition == nil, let presented else { return }
+
+            let interaction = UIPercentDrivenInteractiveTransition()
+            interaction.completionCurve = .easeOut
+            interactiveTransition = interaction
+            presented.dismiss(animated: true)
+
+        case .changed:
+            interactiveTransition?.update(fractionCompleted)
+
+        case .ended:
+            guard let interactiveTransition else { return }
+            let velocity = gesture.velocity(in: gesture.view).x
+            if velocity < 0 || fractionCompleted >= 0.5 {
+                interactiveTransition.finish()
+            } else {
+                interactiveTransition.cancel()
+            }
+
+        case .cancelled, .failed:
+            interactiveTransition?.cancel()
+
+        default:
+            break
         }
     }
 }

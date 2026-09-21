@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 final class TapActionInteraction: NSObject, UIInteraction {
     weak var view: UIView?
     let action: @MainActor @Sendable () -> Void
@@ -13,13 +14,15 @@ final class TapActionInteraction: NSObject, UIInteraction {
     
     init(action: @MainActor @escaping @Sendable () -> Void) {
         self.action = action
+        super.init()
     }
     
     func willMove(to view: UIView?) {
-        self.view = view
+        self.view?.removeGestureRecognizer(tapGesture)
     }
     
     func didMove(to view: UIView?) {
+        self.view = view
         tapGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(tapGesture)
     }
