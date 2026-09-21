@@ -42,9 +42,7 @@ public final class CompactSidebarViewController: UIViewController {
         }
     }
 
-    private let materialBackgroundView = UIVisualEffectView(
-        effect: UIBlurEffect(style: .systemMaterial)
-    )
+    private let materialBackgroundView: UIVisualEffectView
     private let bottomViewContainer = UIView()
     private let collectionView: UICollectionView
     private var cellRegistration: UICollectionView.CellRegistration<UICollectionViewListCell, Int>!
@@ -64,6 +62,9 @@ public final class CompactSidebarViewController: UIViewController {
         self.headerConfiguration = headerConfiguration
         self.footerConfiguration = footerConfiguration
         self.bottomView = bottomView
+        self.materialBackgroundView = UIVisualEffectView(
+            effect: Self.makeBackgroundEffect()
+        )
 
         var layoutConfiguration = UICollectionLayoutListConfiguration(appearance: .sidebar)
         layoutConfiguration.showsSeparators = false
@@ -79,6 +80,14 @@ public final class CompactSidebarViewController: UIViewController {
         )
 
         super.init(nibName: nil, bundle: nil)
+    }
+
+    private static func makeBackgroundEffect() -> UIVisualEffect {
+        if #available(iOS 26.0, *) {
+            return UIGlassEffect(style: .regular)
+        } else {
+            return UIBlurEffect(style: .systemMaterial)
+        }
     }
 
     /// Creates a sidebar using the tab and sidebar configuration from a tab bar controller.
