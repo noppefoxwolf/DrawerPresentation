@@ -2,15 +2,21 @@ import UIKit
 
 public final class DrawerTransitionController: NSObject, UIViewControllerTransitioningDelegate {
     let drawerWidth: CGFloat
+    /// Whether the presenting view moves to the right while the drawer is shown.
+    public var movesPresentingView: Bool
     var animator: DrawerTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
     
-    public init(drawerWidth: CGFloat) {
+    public init(drawerWidth: CGFloat, movesPresentingView: Bool = true) {
         self.drawerWidth = drawerWidth
+        self.movesPresentingView = movesPresentingView
     }
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
-        let animator = DrawerTransitionAnimator(drawerWidth: drawerWidth)
+        let animator = DrawerTransitionAnimator(
+            drawerWidth: drawerWidth,
+            movesPresentingView: movesPresentingView
+        )
         animator.dimmingTapInteraction = TapActionInteraction(action: { [weak presented] in
             presented?.dismiss(animated: true)
         })

@@ -1,9 +1,14 @@
 import UIKit
+import SwiftUI
+import DrawerPresentation
 
 @MainActor
-final class ExampleTabBarController: UITabBarController {
+final class ExampleTabBarController: UITabBarController, DrawerInteractionDelegate, ExampleSideMenuViewControllerDelegate {
+    private lazy var drawerInteraction = DrawerInteraction(delegate: self)
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.addInteraction(drawerInteraction)
 
         let plainViewController = UINavigationController(
             rootViewController: PlainViewController()
@@ -48,12 +53,74 @@ final class ExampleTabBarController: UITabBarController {
             tag: 4
         )
 
+        let settingsViewController = UINavigationController(
+            rootViewController: ExampleSettingsViewController()
+        )
+        settingsViewController.tabBarItem = UITabBarItem(
+            title: "Settings",
+            image: UIImage(systemName: "gearshape"),
+            tag: 5
+        )
+
         viewControllers = [
             plainViewController,
             scrollViewController,
             pageViewController,
             splitViewController,
             nestedCollectionViewController,
+            settingsViewController,
         ]
+    }
+
+    func presentDrawer() {
+        updateDrawerSettings()
+        drawerInteraction.present()
+    }
+
+    func updateDrawerSettings() {
+        drawerInteraction.movesPresentingView = ExampleSettings.shared.movesPresentingView
+    }
+
+    func viewController(for interaction: DrawerInteraction) -> UIViewController {
+        self
+    }
+
+    func drawerInteraction(
+        _ interaction: DrawerInteraction,
+        widthForDrawer drawerViewController: UIViewController
+    ) -> CGFloat {
+        300
+    }
+
+    func drawerInteraction(
+        _ interaction: DrawerInteraction,
+        presentingViewControllerFor viewController: UIViewController
+    ) -> UIViewController? {
+        let sideMenuViewController = ExampleSideMenuViewController()
+        sideMenuViewController.delegate = self
+        return sideMenuViewController
+    }
+
+    func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
+        viewController.dismiss(animated: true)
+        activeNavigationController?.pushViewController(
+            UIHostingController(rootView: Text("Child View")),
+            animated: true
+        )
+    }
+
+    private var activeNavigationController: UINavigationController? {
+        guard let selectedViewController else { return nil }
+
+        if let navigationController = selectedViewController as? UINavigationController {
+            return navigationController
+        }
+
+        if let splitViewController = selectedViewController as? UISplitViewController {
+            return splitViewController.viewController(for: .secondary) as? UINavigationController
+                ?? splitViewController.viewController(for: .primary) as? UINavigationController
+        }
+
+        return selectedViewController.navigationController
     }
 }

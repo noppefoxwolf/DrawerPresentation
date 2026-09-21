@@ -3,6 +3,7 @@ import UIKit
 @MainActor
 final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     let drawerWidth: Double
+    let movesPresentingView: Bool
     var isPresenting: Bool = true
     let dimmingView = DimmingView()
     let dismissPanGesture = UIPanGestureRecognizer()
@@ -20,8 +21,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     
     var onDismissGesture: ((_ dismissPanGesture: UIPanGestureRecognizer, _ drawerWidth: CGFloat) -> Void)? = nil
     
-    init(drawerWidth: CGFloat) {
+    init(drawerWidth: CGFloat, movesPresentingView: Bool) {
         self.drawerWidth = drawerWidth
+        self.movesPresentingView = movesPresentingView
         super.init()
         dismissPanGesture.addTarget(self, action: #selector(onDismissPan))
     }
@@ -85,11 +87,13 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
             options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
+            animations: { [dimmingView, drawerWidth, movesPresentingView] in
                 dimmingView.alpha = 1
                 toView.transform = .identity
-                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
+                if movesPresentingView {
+                    // Workaround: view.transform hangs SwiftUI gestures. Use layer.transform instead.
+                    fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
+                }
             },
             completion: { [dimmingView, dismissPanGesture] _ in
                 if transitionContext.transitionWasCancelled {
