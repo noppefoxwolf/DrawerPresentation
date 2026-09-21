@@ -4,6 +4,12 @@ import InteractiveContainerPanGestureRecognizer
 @MainActor
 open class DrawerInteraction: NSObject, UIInteraction {
     public weak var delegate: (any DrawerInteractionDelegate)? = nil
+
+    public var isEnabled: Bool = true {
+        didSet {
+            presentPanGesture.isEnabled = isEnabled
+        }
+    }
     
     let presentPanGesture = InteractiveContainerPanGestureRecognizer()
     
@@ -24,6 +30,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
         #if os(iOS)
         presentPanGesture.addTarget(self, action: #selector(onPan))
         presentPanGesture.maximumNumberOfTouches = 1
+        presentPanGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(presentPanGesture)
         #endif
     }
