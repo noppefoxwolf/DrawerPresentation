@@ -88,25 +88,32 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
     ) -> UIViewController? {
         // The system sidebar owns its bottom view. Create a separate instance
         // for the drawer instead of moving the same UIView between containers.
+        // iOS 26 and later use the scroll edge container; older iOS versions
+        // fall back to the navigation controller's toolbar.
+        let bottomView: UIView?
+        if #available(iOS 26.0, *) {
+            bottomView = makeSidebarBottomView()
+        } else {
+            bottomView = nil
+        }
+
         let sidebarViewController = CompactSidebarViewController(
             tabs: tabs,
             selectedTab: selectedTab,
             headerConfiguration: sidebar.headerContentConfiguration,
-            footerConfiguration: sidebar.footerContentConfiguration
+            footerConfiguration: sidebar.footerContentConfiguration,
+            bottomView: bottomView
         )
         sidebarViewController.delegate = self
 
         let navigationController = UINavigationController(
             rootViewController: sidebarViewController
         )
-        navigationController.setToolbarHidden(false, animated: false)
-        let bottomBarItem = UIBarButtonItem(customView: makeSidebarBottomView())
-        if #available(iOS 26.0, *) {
-            bottomBarItem.hidesSharedBackground = true
+        if #unavailable(iOS 26.0) {
+            navigationController.setToolbarHidden(false, animated: false)
+            let bottomBarItem = UIBarButtonItem(customView: makeSidebarBottomView())
+            sidebarViewController.toolbarItems = [bottomBarItem]
         }
-        sidebarViewController.toolbarItems = [
-            bottomBarItem
-        ]
 
         let closeButton = UIBarButtonItem(
             image: UIImage(systemName: "platter.filled.bottom.iphone"),

@@ -238,6 +238,13 @@ public final class CompactSidebarViewController: UIViewController {
             bottomViewContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: bottomViewContainer.bottomAnchor),
         ])
+
+        if #available(iOS 26.0, *) {
+            let interaction = UIScrollEdgeElementContainerInteraction()
+            interaction.scrollView = collectionView
+            interaction.edge = .bottom
+            bottomViewContainer.addInteraction(interaction)
+        }
     }
 
     public override func viewDidLayoutSubviews() {
