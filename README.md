@@ -53,6 +53,46 @@ present(vc, animated: true)
 
 Let people know how they can contribute into your project. A contributing guideline will be a big plus.
 
+## Build and Test
+
+This repository is an iOS Swift package. Use `xcodebuild` with an iOS Simulator destination.
+
+List available simulator destinations:
+
+```sh
+xcodebuild -scheme DrawerPresentation -sdk iphonesimulator -showdestinations
+```
+
+Build for the iOS Simulator:
+
+```sh
+xcodebuild \
+    -scheme DrawerPresentation \
+    -destination 'generic/platform=iOS Simulator' \
+    build
+```
+
+Run tests on a specific available simulator:
+
+```sh
+xcodebuild \
+    -scheme DrawerPresentation \
+    -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+    test
+```
+
+Replace the simulator name and OS version with a destination returned by `-showdestinations` when necessary.
+
+Build the Example app:
+
+```sh
+cd Example.swiftpm
+xcodebuild \
+    -scheme Playground \
+    -destination 'generic/platform=iOS Simulator' \
+    build
+```
+
 ## Apps Using
 
 <p float="left">

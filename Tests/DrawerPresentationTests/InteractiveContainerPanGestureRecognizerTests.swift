@@ -5,6 +5,35 @@ import UIKit
 
 @MainActor
 struct InteractiveContainerPanGestureRecognizerTests {
+    @Test("A scrollable ancestor takes priority over a non-scrollable nested scroll view")
+    func scrollableAncestorTakesPriorityOverNestedScrollView() {
+        let parent = UIScrollView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        parent.contentSize = CGSize(width: 640, height: 480)
+        parent.contentOffset.x = 100
+
+        let child = UIScrollView(frame: parent.bounds)
+        child.contentSize = CGSize(width: 320, height: 960)
+        parent.addSubview(child)
+
+        let recognizer = InteractiveContainerPanGestureRecognizer()
+        let shouldBegin = recognizer.shouldBegin(
+            location: CGPoint(x: 160, y: 240),
+            velocity: CGPoint(x: 200, y: 0),
+            scrollViews: [child, parent]
+        )
+
+        #expect(!shouldBegin)
+
+        parent.contentOffset.x = 0
+        #expect(
+            recognizer.shouldBegin(
+                location: CGPoint(x: 160, y: 240),
+                velocity: CGPoint(x: 200, y: 0),
+                scrollViews: [child, parent]
+            )
+        )
+    }
+
     @Test("A page transition takes priority over the container pan")
     func pageViewControllerPanTakesPriorityWhenPreviousPageExists() throws {
         let fixture = PageViewControllerFixture()
