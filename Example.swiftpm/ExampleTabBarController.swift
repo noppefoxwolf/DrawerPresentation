@@ -86,7 +86,15 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         _ interaction: DrawerInteraction,
         presentingViewControllerFor viewController: UIViewController
     ) -> UIViewController? {
-        let sidebarViewController = CompactSidebarViewController(tabBarController: self)
+        // The system sidebar owns its bottom view. Create a separate instance
+        // for the drawer instead of moving the same UIView between containers.
+        let sidebarViewController = CompactSidebarViewController(
+            tabs: tabs,
+            selectedTab: selectedTab,
+            headerConfiguration: sidebar.headerContentConfiguration,
+            footerConfiguration: sidebar.footerContentConfiguration,
+            bottomView: makeSidebarBottomView()
+        )
         sidebarViewController.delegate = self
         return sidebarViewController
     }
