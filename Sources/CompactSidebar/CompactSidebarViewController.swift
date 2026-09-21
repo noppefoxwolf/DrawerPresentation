@@ -148,13 +148,16 @@ public final class CompactSidebarViewController: UIViewController {
             cell.accessories = []
             cell.accessibilityIdentifier = "compactSidebar.tab.\(tabIndex)"
             cell.configurationUpdateHandler = { cell, state in
+                let foregroundColor: UIColor = state.isSelected ? .white : .label
+                let imageTintColor: UIColor = state.isSelected ? .white : .tintColor
+
                 var content = UIListContentConfiguration.cell()
                 content.text = title
                 content.secondaryText = tab.subtitle
                 content.image = image
-                content.textProperties.color = .label
-                content.secondaryTextProperties.color = .label
-                content.imageProperties.tintColor = .tintColor
+                content.textProperties.color = foregroundColor
+                content.secondaryTextProperties.color = foregroundColor
+                content.imageProperties.tintColor = imageTintColor
 
                 var background = UIBackgroundConfiguration.listCell()
                 background.backgroundColor = state.isSelected ? .tintColor : .clear
