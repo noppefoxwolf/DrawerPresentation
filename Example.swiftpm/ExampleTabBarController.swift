@@ -92,11 +92,31 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
             tabs: tabs,
             selectedTab: selectedTab,
             headerConfiguration: sidebar.headerContentConfiguration,
-            footerConfiguration: sidebar.footerContentConfiguration,
-            bottomView: makeSidebarBottomView()
+            footerConfiguration: sidebar.footerContentConfiguration
         )
         sidebarViewController.delegate = self
-        return sidebarViewController
+
+        let navigationController = UINavigationController(
+            rootViewController: sidebarViewController
+        )
+        navigationController.setToolbarHidden(false, animated: false)
+        sidebarViewController.toolbarItems = [
+            UIBarButtonItem(customView: makeSidebarBottomView())
+        ]
+
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "platter.filled.bottom.iphone"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        closeButton.accessibilityLabel = "Close Sidebar"
+        closeButton.primaryAction = UIAction { [weak navigationController] _ in
+            navigationController?.dismiss(animated: true)
+        }
+        sidebarViewController.navigationItem.rightBarButtonItem = closeButton
+
+        return navigationController
     }
 
     func compactSidebarViewController(
@@ -104,7 +124,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         didSelect tab: UITab
     ) {
         selectedTab = tab
-        viewController.dismiss(animated: true)
+        viewController.navigationController?.dismiss(animated: true)
     }
 
     private var sidebarHeaderConfiguration: UIContentConfiguration {

@@ -90,6 +90,11 @@ public final class CompactSidebarViewController: UIViewController {
         }
     }
 
+    @available(iOS 27.1, *)
+    public override var preferredVerticalBarBehavior: UIVerticalBarBehavior {
+        .disabled
+    }
+
     /// Creates a sidebar using the tab and sidebar configuration from a tab bar controller.
     public convenience init(tabBarController: UITabBarController) {
         self.init(
