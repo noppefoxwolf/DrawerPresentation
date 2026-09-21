@@ -3,6 +3,13 @@ import UIKit
 final class TapActionInteraction: NSObject, UIInteraction {
     weak var view: UIView?
     let action: @MainActor @Sendable () -> Void
+    private lazy var tapGesture = UITapGestureRecognizer(target: self, action: #selector(onTap))
+
+    var isEnabled: Bool = true {
+        didSet {
+            tapGesture.isEnabled = isEnabled
+        }
+    }
     
     init(action: @MainActor @escaping @Sendable () -> Void) {
         self.action = action
@@ -13,7 +20,7 @@ final class TapActionInteraction: NSObject, UIInteraction {
     }
     
     func didMove(to view: UIView?) {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(onTap))
+        tapGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(tapGesture)
     }
     
