@@ -2,7 +2,7 @@
 
 SidebarPresentation is a library that provides a customizable sidebar presentation style for iOS applications.
 
-![](https://github.com/noppefoxwolf/DrawerPresentation/blob/main/.github/example.gif)
+![](https://github.com/noppefoxwolf/SidebarPresentation/blob/main/.github/example.gif)
 
 ## Installation
 
@@ -10,7 +10,7 @@ SidebarPresentation is a library that provides a customizable sidebar presentati
 .target(
     name: "YourProject",
     dependencies: [
-        .package(url: "https://github.com/noppefoxwolf/DrawerPresentation", from: "1.0.0")
+        .package(url: "https://github.com/noppefoxwolf/SidebarPresentation", from: "0.5.0")
     ]
 )
 ```
