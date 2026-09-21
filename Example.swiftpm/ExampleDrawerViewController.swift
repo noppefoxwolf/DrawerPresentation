@@ -3,18 +3,18 @@ import SwiftUI
 import DrawerPresentation
 
 @MainActor
-class ExampleDrawerViewController: UIViewController, ExampleSideMenuViewControllerDelegate, DrawerInteractionDelegate {
-    private lazy var drawerInteraction = DrawerInteraction(delegate: self)
+class ExampleDrawerViewController: UIViewController {
     private let manualTransitionDelegate = DrawerTransitionController(drawerWidth: 300)
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        applyDrawerSettings()
         view.backgroundColor = .systemBackground
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "line.3.horizontal"),
             primaryAction: UIAction { [weak self] _ in
-                self?.drawerInteraction.present()
+                self?.presentDrawer()
             }
         )
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -23,43 +23,22 @@ class ExampleDrawerViewController: UIViewController, ExampleSideMenuViewControll
                 self?.presentDrawerManually()
             }
         )
-
-        navigationController?.view.addInteraction(drawerInteraction)
     }
 
     func presentDrawerManually() {
+        applyDrawerSettings()
         let viewController = UIHostingController(rootView: Text("Presented manually"))
         viewController.modalPresentationStyle = .custom
         viewController.transitioningDelegate = manualTransitionDelegate
         present(viewController, animated: true)
     }
 
-    func exampleSideMenuViewControllerDidSelect(_ viewController: ExampleSideMenuViewController) {
-        viewController.dismiss(animated: true)
-        navigationController?.pushViewController(
-            UIHostingController(rootView: Text("Child View")),
-            animated: true
-        )
+    private func presentDrawer() {
+        (tabBarController as? ExampleTabBarController)?.presentDrawer()
     }
 
-    func viewController(for interaction: DrawerInteraction) -> UIViewController {
-        navigationController ?? self
-    }
-
-    func drawerInteraction(
-        _ interaction: DrawerInteraction,
-        widthForDrawer drawerViewController: UIViewController
-    ) -> CGFloat {
-        300
-    }
-
-    func drawerInteraction(
-        _ interaction: DrawerInteraction,
-        presentingViewControllerFor viewController: UIViewController
-    ) -> UIViewController? {
-        let sideMenuViewController = ExampleSideMenuViewController()
-        sideMenuViewController.delegate = self
-        return sideMenuViewController
+    private func applyDrawerSettings() {
+        manualTransitionDelegate.movesPresentingView = ExampleSettings.shared.movesPresentingView
     }
 }
 

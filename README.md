@@ -21,6 +21,7 @@ DrawerPresentation is a library that provides a customizable drawer presentation
 
 // Add Interaction
 let interaction = DrawerInteraction(delegate: self)
+interaction.movesPresentingView = false
 view.addInteraction(interaction)
 
 // Delegate Example
@@ -42,7 +43,10 @@ extension ViewController: DrawerInteractionDelegate {
 interaction.present()
 
 // Using transitioningDelegate directly
-self.transitionController = DrawerTransitionController(drawerWidth: 300)
+self.transitionController = DrawerTransitionController(
+    drawerWidth: 300,
+    movesPresentingView: false
+)
 let vc = UIHostingController(rootView: Text("Hello, World!!"))
 vc.modalPresentationStyle = .custom
 vc.transitioningDelegate = transitionController

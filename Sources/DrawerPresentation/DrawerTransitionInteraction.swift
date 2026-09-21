@@ -4,6 +4,8 @@ import InteractiveContainerPanGestureRecognizer
 @MainActor
 open class DrawerInteraction: NSObject, UIInteraction {
     public weak var delegate: (any DrawerInteractionDelegate)? = nil
+    /// Whether the presenting view moves to the right while the drawer is shown.
+    public var movesPresentingView = true
     
     let presentPanGesture = InteractiveContainerPanGestureRecognizer()
     
@@ -36,7 +38,10 @@ open class DrawerInteraction: NSObject, UIInteraction {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
         let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc) ?? 300
-        transitionController = DrawerTransitionController(drawerWidth: drawerWidth)
+        transitionController = DrawerTransitionController(
+            drawerWidth: drawerWidth,
+            movesPresentingView: movesPresentingView
+        )
         if isInteractiveTransitoionEnabled {
             transitionController?.interactiveTransition = UIPercentDrivenInteractiveTransition()
         }
