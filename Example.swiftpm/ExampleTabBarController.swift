@@ -79,7 +79,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         _ interaction: DrawerInteraction,
         widthForDrawer drawerViewController: UIViewController
     ) -> CGFloat {
-        300
+        DrawerTransitionController.defaultDrawerWidth
     }
 
     func drawerInteraction(
@@ -88,15 +88,46 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
     ) -> UIViewController? {
         // The system sidebar owns its bottom view. Create a separate instance
         // for the drawer instead of moving the same UIView between containers.
+        // iOS 26 and later use the scroll edge container; older iOS versions
+        // fall back to the navigation controller's toolbar.
+        let bottomView: UIView?
+        if #available(iOS 26.0, *) {
+            bottomView = makeSidebarBottomView()
+        } else {
+            bottomView = nil
+        }
+
         let sidebarViewController = CompactSidebarViewController(
             tabs: tabs,
             selectedTab: selectedTab,
             headerConfiguration: sidebar.headerContentConfiguration,
             footerConfiguration: sidebar.footerContentConfiguration,
-            bottomView: makeSidebarBottomView()
+            bottomView: bottomView
         )
         sidebarViewController.delegate = self
-        return sidebarViewController
+
+        let navigationController = UINavigationController(
+            rootViewController: sidebarViewController
+        )
+        if #unavailable(iOS 26.0) {
+            navigationController.setToolbarHidden(false, animated: false)
+            let bottomBarItem = UIBarButtonItem(customView: makeSidebarBottomView())
+            sidebarViewController.toolbarItems = [bottomBarItem]
+        }
+
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "platter.filled.bottom.iphone"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        closeButton.accessibilityLabel = "Close Sidebar"
+        closeButton.primaryAction = UIAction { [weak navigationController] _ in
+            navigationController?.dismiss(animated: true)
+        }
+        sidebarViewController.navigationItem.rightBarButtonItem = closeButton
+
+        return navigationController
     }
 
     func compactSidebarViewController(
@@ -104,7 +135,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         didSelect tab: UITab
     ) {
         selectedTab = tab
-        viewController.dismiss(animated: true)
+        viewController.navigationController?.dismiss(animated: true)
     }
 
     private var sidebarHeaderConfiguration: UIContentConfiguration {

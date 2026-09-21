@@ -44,7 +44,8 @@ open class DrawerInteraction: NSObject, UIInteraction {
     private func present(isInteractiveTransitionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
-        let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc) ?? 300
+        let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc)
+            ?? DrawerTransitionController.defaultDrawerWidth
         transitionController = DrawerTransitionController(
             drawerWidth: drawerWidth,
             movesPresentingView: movesPresentingView
@@ -73,7 +74,10 @@ open class DrawerInteraction: NSObject, UIInteraction {
             }
 
             let x = gesture.translation(in: gesture.view).x
-            let width = max(transitionController?.drawerWidth ?? 300, 1)
+            let width = max(
+                transitionController?.drawerWidth ?? DrawerTransitionController.defaultDrawerWidth,
+                1
+            )
             let fractionCompleted = min(max(x / width, 0), 1)
             transitionController?.interactiveTransition?.update(fractionCompleted)
 
@@ -82,7 +86,10 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 return
             }
 
-            let width = max(transitionController?.drawerWidth ?? 300, 1)
+            let width = max(
+                transitionController?.drawerWidth ?? DrawerTransitionController.defaultDrawerWidth,
+                1
+            )
             let x = gesture.translation(in: gesture.view).x
             let fractionCompleted = min(max(x / width, 0), 1)
             if gesture.velocity(in: gesture.view).x > 0 || fractionCompleted >= 0.5 {
