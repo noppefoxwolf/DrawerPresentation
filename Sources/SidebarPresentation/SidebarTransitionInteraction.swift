@@ -42,6 +42,7 @@ open class SidebarInteraction: NSObject, UIInteraction {
     }
 
     private func present(isInteractiveTransitionEnabled: Bool) {
+        guard isEnabled else { return }
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.sidebarInteraction(self, presentingViewControllerFor: parent) else {
             return

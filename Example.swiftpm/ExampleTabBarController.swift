@@ -14,6 +14,7 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
         mode = .tabSidebar
 
         view.addInteraction(sidebarInteraction)
+        updateSidebarSettings()
 
         let plainViewController = UINavigationController(
             rootViewController: PlainViewController()
@@ -96,10 +97,19 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
 
     func presentSidebar() {
         updateSidebarSettings()
-        sidebarInteraction.present()
+        if #available(iOS 27.0, *) {
+            if sidebar.isAvailable {
+                sidebar.isHidden.toggle()
+            } else {
+                sidebarInteraction.present()
+            }
+        } else {
+            sidebarInteraction.present()
+        }
     }
 
     func updateSidebarSettings() {
+        sidebarInteraction.isEnabled = ExampleSettings.shared.isSidebarEnabled
         sidebarInteraction.movesPresentingView = ExampleSettings.shared.movesPresentingView
     }
 
@@ -118,35 +128,18 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
         _ interaction: SidebarInteraction,
         presentingViewControllerFor viewController: UIViewController
     ) -> UIViewController? {
-        // The system sidebar owns its bottom view. Create a separate instance
-        // for the sidebar instead of moving the same UIView between containers.
-        // iOS 26 and later use the scroll edge container; older iOS versions
-        // fall back to the navigation controller's toolbar.
-        let bottomView: UIView?
-        if #available(iOS 26.0, *) {
-            bottomView = makeSidebarBottomView()
-        } else {
-            bottomView = nil
-        }
-
         let sidebarViewController = CompactSidebarViewController(
             tabs: tabs,
             selectedTab: selectedTab,
             headerConfiguration: sidebar.headerContentConfiguration,
             footerConfiguration: sidebar.footerContentConfiguration,
-            bottomView: bottomView
+            bottomView: ExampleSidebarBottomView()
         )
         sidebarViewController.delegate = self
 
         let navigationController = UINavigationController(
             rootViewController: sidebarViewController
         )
-        if #unavailable(iOS 26.0) {
-            navigationController.setToolbarHidden(false, animated: false)
-            let bottomBarItem = UIBarButtonItem(customView: makeSidebarBottomView())
-            sidebarViewController.toolbarItems = [bottomBarItem]
-        }
-
         let closeButton = UIBarButtonItem(
             image: UIImage(systemName: "platter.filled.bottom.iphone"),
             style: .plain,
@@ -188,15 +181,7 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
     private func configureSidebar() {
         sidebar.headerContentConfiguration = sidebarHeaderConfiguration
         sidebar.footerContentConfiguration = sidebarFooterConfiguration
-        sidebar.bottomBarView = makeSidebarBottomView()
-    }
-
-    private func makeSidebarBottomView() -> UIView {
-        let bottomView = ExampleSidebarBottomView()
-        bottomView.action = { [weak self] in
-            self?.closeSidebar()
-        }
-        return bottomView
+        sidebar.bottomBarView = ExampleSidebarBottomView()
     }
 
     @objc

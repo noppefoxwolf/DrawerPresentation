@@ -2,8 +2,6 @@ import UIKit
 
 @MainActor
 final class ExampleSidebarBottomView: UIView {
-    var action: (() -> Void)?
-
     private let profileControl = UIControl()
     private let avatarView = UIImageView(image: UIImage(systemName: "person.crop.circle.fill"))
     private let nameLabel = UILabel()
@@ -57,12 +55,6 @@ final class ExampleSidebarBottomView: UIView {
 
         profileControl.accessibilityLabel = "Noppe Foxwolf, Account"
         profileControl.accessibilityTraits = .button
-        profileControl.addAction(
-            UIAction { [weak self] _ in
-                self?.action?()
-            },
-            for: .primaryActionTriggered
-        )
 
         profileControl.addSubview(contentStackView)
         contentStackView.translatesAutoresizingMaskIntoConstraints = false

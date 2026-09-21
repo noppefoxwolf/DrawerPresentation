@@ -4,6 +4,7 @@ import UIKit
 final class ExampleSettings {
     static let shared = ExampleSettings()
 
+    var isSidebarEnabled = true
     var movesPresentingView = false
 
     private init() {}
@@ -12,6 +13,7 @@ final class ExampleSettings {
 @MainActor
 final class ExampleSettingsViewController: UIViewController {
     private let settings = ExampleSettings.shared
+    private let sidebarEnabledSwitch = UISwitch()
     private let movesPresentingViewSwitch = UISwitch()
 
     override func viewDidLoad() {
@@ -26,6 +28,14 @@ final class ExampleSettingsViewController: UIViewController {
             }
         )
 
+        sidebarEnabledSwitch.isOn = settings.isSidebarEnabled
+        sidebarEnabledSwitch.accessibilityLabel = "Enable Sidebar"
+        sidebarEnabledSwitch.addTarget(
+            self,
+            action: #selector(sidebarEnabledSwitchChanged),
+            for: .valueChanged
+        )
+
         movesPresentingViewSwitch.isOn = settings.movesPresentingView
         movesPresentingViewSwitch.accessibilityLabel = "Move presenting view"
         movesPresentingViewSwitch.addTarget(
@@ -34,18 +44,27 @@ final class ExampleSettingsViewController: UIViewController {
             for: .valueChanged
         )
 
-        let row = makeSwitchRow(
+        let sidebarEnabledRow = makeSwitchRow(
+            title: "Enable Sidebar",
+            detail: "Allow swiping from the edge to open the sidebar.",
+            control: sidebarEnabledSwitch
+        )
+        let movesPresentingViewRow = makeSwitchRow(
             title: "Move presenting view",
             detail: "Move the current screen along with the sidebar.",
             control: movesPresentingViewSwitch
         )
 
-        view.addSubview(row)
-        row.translatesAutoresizingMaskIntoConstraints = false
+        let rows = UIStackView(arrangedSubviews: [sidebarEnabledRow, movesPresentingViewRow])
+        rows.axis = .vertical
+        rows.spacing = 12
+
+        view.addSubview(rows)
+        rows.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            row.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            row.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            view.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: 16),
+            rows.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            rows.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            view.trailingAnchor.constraint(equalTo: rows.trailingAnchor, constant: 16),
         ])
     }
 
@@ -81,6 +100,12 @@ final class ExampleSettingsViewController: UIViewController {
         )
         row.backgroundColor = .secondarySystemGroupedBackground
         return row
+    }
+
+    @objc
+    private func sidebarEnabledSwitchChanged(_ sender: UISwitch) {
+        settings.isSidebarEnabled = sender.isOn
+        (tabBarController as? ExampleTabBarController)?.updateSidebarSettings()
     }
 
     @objc
