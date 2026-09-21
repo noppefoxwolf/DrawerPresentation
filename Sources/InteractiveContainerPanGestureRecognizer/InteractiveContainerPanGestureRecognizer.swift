@@ -20,7 +20,7 @@ package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecogn
     var direction: Direction = .right
     var isDebugLoggingEnabled = false
 
-    weak var trackedScrollView: UIScrollView?
+    weak var trackedTouchView: UIView?
 
     package override init(target: Any?, action: Selector?) {
         super.init(target: target, action: action)
