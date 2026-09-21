@@ -4,7 +4,7 @@ import DrawerPresentation
 
 @MainActor
 class ExampleDrawerViewController: UIViewController {
-    private let manualTransitionDelegate = DrawerTransitionController(drawerWidth: 300)
+    private let manualTransitionDelegate = DrawerTransitionController()
 
     override func viewDidLoad() {
         super.viewDidLoad()

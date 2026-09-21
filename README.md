@@ -31,7 +31,7 @@ extension ViewController: DrawerInteractionDelegate {
     }
     
     func drawerInteraction(_ interaction: DrawerInteraction, widthForDrawer drawerViewController: UIViewController) -> CGFloat {
-        300
+        DrawerTransitionController.defaultDrawerWidth
     }
     
     func drawerInteraction(_ interaction: DrawerInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
@@ -44,7 +44,6 @@ interaction.present()
 
 // Using transitioningDelegate directly
 self.transitionController = DrawerTransitionController(
-    drawerWidth: 300,
     movesPresentingView: false
 )
 let vc = UIHostingController(rootView: Text("Hello, World!!"))

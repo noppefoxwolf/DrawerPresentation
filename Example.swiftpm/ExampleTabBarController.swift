@@ -79,7 +79,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
         _ interaction: DrawerInteraction,
         widthForDrawer drawerViewController: UIViewController
     ) -> CGFloat {
-        300
+        DrawerTransitionController.defaultDrawerWidth
     }
 
     func drawerInteraction(

@@ -2,13 +2,15 @@ import UIKit
 
 @MainActor
 public final class DrawerTransitionController: NSObject, UIViewControllerTransitioningDelegate {
+    public static let defaultDrawerWidth: CGFloat = 320
+
     let drawerWidth: CGFloat
     /// Whether the presenting view moves to the right while the drawer is shown.
     public var movesPresentingView: Bool
     var animator: DrawerTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
     
-    public init(drawerWidth: CGFloat, movesPresentingView: Bool = true) {
+    public init(drawerWidth: CGFloat = 320, movesPresentingView: Bool = true) {
         self.drawerWidth = drawerWidth
         self.movesPresentingView = movesPresentingView
     }

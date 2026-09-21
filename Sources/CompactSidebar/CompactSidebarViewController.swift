@@ -152,8 +152,13 @@ public final class CompactSidebarViewController: UIViewController {
                 content.text = title
                 content.secondaryText = tab.subtitle
                 content.image = image
-                content.textProperties.color = state.isSelected ? .systemBlue : .label
-                content.imageProperties.tintColor = state.isSelected ? .systemBlue : .label
+                content.textProperties.color = .label
+                content.secondaryTextProperties.color = .label
+                content.imageProperties.tintColor = .tintColor
+
+                var background = UIBackgroundConfiguration.listCell()
+                background.backgroundColor = state.isSelected ? .tintColor : .clear
+                cell.backgroundConfiguration = background
                 cell.contentConfiguration = content
             }
             cell.setNeedsUpdateConfiguration()
