@@ -100,7 +100,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
     }
 
     private var sidebarHeaderConfiguration: UIContentConfiguration {
-        var configuration = UIListContentConfiguration.sidebarHeader()
+        var configuration = UIListContentConfiguration.header()
         configuration.text = "SidebarSample"
         configuration.secondaryText = "DrawerPresentation"
         configuration.image = UIImage(systemName: "sidebar.left")
@@ -109,7 +109,7 @@ final class ExampleTabBarController: UITabBarController, DrawerInteractionDelega
     }
 
     private var sidebarFooterConfiguration: UIContentConfiguration {
-        var configuration = UIListContentConfiguration.plainFooter()
+        var configuration = UIListContentConfiguration.footer()
         configuration.text = "Swipe right to close"
         return configuration
     }
