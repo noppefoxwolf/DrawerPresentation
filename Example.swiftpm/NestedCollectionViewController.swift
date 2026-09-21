@@ -21,7 +21,8 @@ final class NestedCollectionViewController: ExampleDrawerViewController {
         label.font = .preferredFont(forTextStyle: .subheadline)
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
-        label.text = "Swipe left to move the parent to page 2.\nThen swipe right inside the child list: the parent should move back and the drawer should stay closed.\nOn page 1, swipe right inside the child list to open the drawer."
+        label.text =
+            "Swipe left to move the parent to page 2.\nThen swipe right inside the child list: the parent should move back and the drawer should stay closed.\nOn page 1, swipe right inside the child list to open the drawer."
         return label
     }()
 
@@ -52,16 +53,24 @@ final class NestedCollectionViewController: ExampleDrawerViewController {
         parentCollectionView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            instructionsLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            instructionsLabel.topAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: 12
+            ),
             instructionsLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             view.trailingAnchor.constraint(equalTo: instructionsLabel.trailingAnchor, constant: 16),
             statusLabel.topAnchor.constraint(equalTo: instructionsLabel.bottomAnchor, constant: 10),
             statusLabel.leadingAnchor.constraint(equalTo: instructionsLabel.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: statusLabel.trailingAnchor, constant: 16),
-            parentCollectionView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
+            parentCollectionView.topAnchor.constraint(
+                equalTo: statusLabel.bottomAnchor,
+                constant: 8
+            ),
             parentCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: parentCollectionView.trailingAnchor),
-            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: parentCollectionView.bottomAnchor),
+            view.safeAreaLayoutGuide.bottomAnchor.constraint(
+                equalTo: parentCollectionView.bottomAnchor
+            ),
         ])
 
         updateStatusLabel()
@@ -80,8 +89,12 @@ final class NestedCollectionViewController: ExampleDrawerViewController {
 }
 
 @MainActor
-extension NestedCollectionViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+extension NestedCollectionViewController: UICollectionViewDataSource,
+    UICollectionViewDelegateFlowLayout
+{
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int)
+        -> Int
+    {
         3
     }
 
@@ -89,10 +102,11 @@ extension NestedCollectionViewController: UICollectionViewDataSource, UICollecti
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: NestedCollectionPageCell.reuseIdentifier,
-            for: indexPath
-        ) as! NestedCollectionPageCell
+        let cell =
+            collectionView.dequeueReusableCell(
+                withReuseIdentifier: NestedCollectionPageCell.reuseIdentifier,
+                for: indexPath
+            ) as! NestedCollectionPageCell
         cell.configure(page: indexPath.item + 1)
         return cell
     }
@@ -165,7 +179,9 @@ private final class NestedCollectionPageCell: UICollectionViewCell {
 
 @MainActor
 extension NestedCollectionPageCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int)
+        -> Int
+    {
         30
     }
 
@@ -173,10 +189,11 @@ extension NestedCollectionPageCell: UICollectionViewDataSource, UICollectionView
         _ collectionView: UICollectionView,
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: NestedCollectionRowCell.reuseIdentifier,
-            for: indexPath
-        ) as! NestedCollectionRowCell
+        let cell =
+            collectionView.dequeueReusableCell(
+                withReuseIdentifier: NestedCollectionRowCell.reuseIdentifier,
+                for: indexPath
+            ) as! NestedCollectionRowCell
         cell.configure(title: "Page \(page) · Child row \(indexPath.item + 1)")
         return cell
     }

@@ -1,7 +1,7 @@
 // swift-tools-version: 6.3
 
-import PackageDescription
 import AppleProductTypes
+import PackageDescription
 
 let package = Package(
     name: "Playground",
@@ -18,30 +18,30 @@ let package = Package(
             bundleVersion: "1",
             supportedDeviceFamilies: [
                 .pad,
-                .phone
+                .phone,
             ],
             supportedInterfaceOrientations: [
                 .portrait,
                 .landscapeRight,
                 .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+                .portraitUpsideDown(.when(deviceFamilies: [.pad])),
             ]
         )
     ],
-    
+
     dependencies: [
         .package(name: "DrawerPresentation", path: "../")
     ],
-    
+
     targets: [
         .executableTarget(
             name: "AppModule",
-            
+
             dependencies: [
                 .product(name: "DrawerPresentation", package: "DrawerPresentation"),
-                .product(name: "CompactSidebar", package: "DrawerPresentation")
+                .product(name: "CompactSidebar", package: "DrawerPresentation"),
             ],
-            
+
             path: "."
         )
     ]

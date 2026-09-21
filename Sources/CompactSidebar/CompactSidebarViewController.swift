@@ -45,7 +45,7 @@ public final class CompactSidebarViewController: UIViewController {
     internal var materialBackgroundView: UIVisualEffectView {
         view as! UIVisualEffectView
     }
-    
+
     internal let collectionView: UICollectionView
 
     internal lazy var cellRegistration = makeCellRegistration()

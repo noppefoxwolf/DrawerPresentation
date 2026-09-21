@@ -9,13 +9,17 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     public var movesPresentingView: Bool
     var animator: DrawerTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
-    
+
     public init(drawerWidth: CGFloat = 320, movesPresentingView: Bool = true) {
         self.drawerWidth = drawerWidth
         self.movesPresentingView = movesPresentingView
     }
-    
-    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+
+    public func animationController(
+        forPresented presented: UIViewController,
+        presenting: UIViewController,
+        source: UIViewController
+    ) -> (any UIViewControllerAnimatedTransitioning)? {
         let animator = DrawerTransitionAnimator(
             drawerWidth: drawerWidth,
             movesPresentingView: movesPresentingView
@@ -44,24 +48,32 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         }
         return presentationController
     }
-    
-    public func interactionControllerForPresentation(using animator: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
+
+    public func interactionControllerForPresentation(
+        using animator: any UIViewControllerAnimatedTransitioning
+    ) -> (any UIViewControllerInteractiveTransitioning)? {
         guard let animator = animator as? DrawerTransitionAnimator,
-              animator === self.animator else {
+            animator === self.animator
+        else {
             return nil
         }
         return interactiveTransition
     }
-    
-    public func animationController(forDismissed dismissed: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
+
+    public func animationController(forDismissed dismissed: UIViewController) -> (
+        any UIViewControllerAnimatedTransitioning
+    )? {
         animator?.isPresenting = false
         animator?.isInteractiveTransition = interactiveTransition != nil
         return animator
     }
-    
-    public func interactionControllerForDismissal(using animator: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
+
+    public func interactionControllerForDismissal(
+        using animator: any UIViewControllerAnimatedTransitioning
+    ) -> (any UIViewControllerInteractiveTransitioning)? {
         guard let animator = animator as? DrawerTransitionAnimator,
-              animator === self.animator else {
+            animator === self.animator
+        else {
             return nil
         }
         return interactiveTransition

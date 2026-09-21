@@ -10,26 +10,32 @@ let package = Package(
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "DrawerPresentation",
-            targets: ["DrawerPresentation"]),
+            targets: ["DrawerPresentation"]
+        ),
         .library(
             name: "CompactSidebar",
-            targets: ["CompactSidebar"]),
+            targets: ["CompactSidebar"]
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "InteractiveContainerPanGestureRecognizer"),
+            name: "InteractiveContainerPanGestureRecognizer"
+        ),
         .target(
             name: "DrawerPresentation",
-            dependencies: ["InteractiveContainerPanGestureRecognizer"]),
+            dependencies: ["InteractiveContainerPanGestureRecognizer"]
+        ),
         .target(
-            name: "CompactSidebar"),
+            name: "CompactSidebar"
+        ),
         .testTarget(
             name: "DrawerPresentationTests",
             dependencies: [
                 "DrawerPresentation",
                 "InteractiveContainerPanGestureRecognizer",
-            ]),
+            ]
+        ),
     ]
 )

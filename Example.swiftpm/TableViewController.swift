@@ -31,9 +31,13 @@ final class ScrollViewController: ExampleDrawerViewController {
             view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            stackView.leadingAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.leadingAnchor
+            ),
             scrollView.contentLayoutGuide.bottomAnchor.constraint(equalTo: stackView.bottomAnchor),
-            scrollView.contentLayoutGuide.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+            scrollView.contentLayoutGuide.trailingAnchor.constraint(
+                equalTo: stackView.trailingAnchor
+            ),
             stackView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor),
         ])
 
@@ -60,7 +64,8 @@ private final class ScrollCardView: UIView {
         detailLabel.font = .preferredFont(forTextStyle: .body)
         detailLabel.textColor = .secondaryLabel
         detailLabel.numberOfLines = 0
-        detailLabel.text = "Swipe horizontally to move the scroll view.\nTry opening the drawer at the left edge."
+        detailLabel.text =
+            "Swipe horizontally to move the scroll view.\nTry opening the drawer at the left edge."
 
         let stackView = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         stackView.axis = .vertical

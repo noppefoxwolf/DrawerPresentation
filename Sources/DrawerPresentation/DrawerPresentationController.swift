@@ -14,10 +14,11 @@ final class DrawerPresentationController: UIPresentationController {
         drawerWidth: CGFloat
     ) {
         self.drawerWidth = drawerWidth
-        super.init(
-            presentedViewController: presentedViewController,
-            presenting: presentingViewController
-        )
+        super
+            .init(
+                presentedViewController: presentedViewController,
+                presenting: presentingViewController
+            )
 
         dismissPanGesture.addTarget(self, action: #selector(onDismissPan))
         dimmingView.addInteraction(

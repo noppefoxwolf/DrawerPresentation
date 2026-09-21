@@ -245,7 +245,9 @@ private final class DataSource: NSObject, UIPageViewControllerDataSource {
     }
 
     func viewControllerAfter(_ viewController: UIViewController) -> UIViewController? {
-        guard let index = pages.firstIndex(where: { $0 === viewController }), index + 1 < pages.count else {
+        guard let index = pages.firstIndex(where: { $0 === viewController }),
+            index + 1 < pages.count
+        else {
             return nil
         }
         return pages[index + 1]
@@ -266,8 +268,8 @@ private final class DataSource: NSObject, UIPageViewControllerDataSource {
     }
 }
 
-private extension UIView {
-    var descendantScrollViews: [UIScrollView] {
+extension UIView {
+    fileprivate var descendantScrollViews: [UIScrollView] {
         subviews.flatMap { subview in
             ((subview as? UIScrollView).map { [$0] } ?? [])
                 + subview.descendantScrollViews

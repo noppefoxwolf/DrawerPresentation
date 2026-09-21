@@ -11,22 +11,22 @@ final class TapActionInteraction: NSObject, UIInteraction {
             tapGesture.isEnabled = isEnabled
         }
     }
-    
+
     init(action: @MainActor @escaping @Sendable () -> Void) {
         self.action = action
         super.init()
     }
-    
+
     func willMove(to view: UIView?) {
         self.view?.removeGestureRecognizer(tapGesture)
     }
-    
+
     func didMove(to view: UIView?) {
         self.view = view
         tapGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(tapGesture)
     }
-    
+
     @objc
     func onTap(_ gesture: UITapGestureRecognizer) {
         guard gesture.state == .ended else { return }

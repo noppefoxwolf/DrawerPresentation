@@ -24,7 +24,8 @@ extension InteractiveContainerPanGestureRecognizer {
 
     @MainActor
     struct Behavior {
-        typealias Handler = (InteractiveContainerPanGestureRecognizer, BehaviorEvent) -> BehaviorDecision
+        typealias Handler = (InteractiveContainerPanGestureRecognizer, BehaviorEvent) ->
+            BehaviorDecision
 
         private let handler: Handler
 
@@ -57,11 +58,12 @@ extension InteractiveContainerPanGestureRecognizer {
         /// Gives a scroll-style page view controller priority when a page exists in the swipe direction.
         static let pageViewController = Behavior.custom { recognizer, event in
             guard case .shouldBegin(_, let velocity, let scrollViews) = event,
-                  recognizer.matchesDirection(velocity),
-                  let scrollView = scrollViews.first,
-                  let pageViewController = recognizer.pageViewController(containing: scrollView),
-                  let currentViewController = pageViewController.viewControllers?.first,
-                  let dataSource = pageViewController.dataSource else {
+                recognizer.matchesDirection(velocity),
+                let scrollView = scrollViews.first,
+                let pageViewController = recognizer.pageViewController(containing: scrollView),
+                let currentViewController = pageViewController.viewControllers?.first,
+                let dataSource = pageViewController.dataSource
+            else {
                 return .ignore
             }
 
@@ -170,7 +172,8 @@ extension InteractiveContainerPanGestureRecognizer {
             velocity: velocity,
             scrollViews: scrollViews
         )
-        let shouldBegin = hasMatchingDirection
+        let shouldBegin =
+            hasMatchingDirection
             && !decisions(for: event).contains(where: isDenied)
         log(
             "shouldBegin "
@@ -194,7 +197,8 @@ extension InteractiveContainerPanGestureRecognizer {
             other: otherGestureRecognizer
         )
         let decisions = decisions(for: event)
-        let shouldRecognizeSimultaneously = !decisions.contains(where: isDenied)
+        let shouldRecognizeSimultaneously =
+            !decisions.contains(where: isDenied)
             && decisions.contains(where: isAllowed)
         log(
             "simultaneous "
@@ -216,7 +220,8 @@ extension InteractiveContainerPanGestureRecognizer {
             other: otherGestureRecognizer
         )
         let decisions = decisions(for: event)
-        let shouldRequireFailure = !decisions.contains(where: isDenied)
+        let shouldRequireFailure =
+            !decisions.contains(where: isDenied)
             && decisions.contains(where: isAllowed)
         log(
             "shouldRequireFailureOf "
@@ -238,7 +243,8 @@ extension InteractiveContainerPanGestureRecognizer {
             other: otherGestureRecognizer
         )
         let decisions = decisions(for: event)
-        let shouldBeRequiredToFailBy = !decisions.contains(where: isDenied)
+        let shouldBeRequiredToFailBy =
+            !decisions.contains(where: isDenied)
             && decisions.contains(where: isAllowed)
         log(
             "shouldBeRequiredToFailBy "
@@ -266,13 +272,16 @@ extension InteractiveContainerPanGestureRecognizer {
         return false
     }
 
-    fileprivate func isNavigationTransitionGesture(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        guard gestureRecognizer is UIPanGestureRecognizer
+    fileprivate func isNavigationTransitionGesture(_ gestureRecognizer: UIGestureRecognizer) -> Bool
+    {
+        guard
+            gestureRecognizer is UIPanGestureRecognizer
                 || gestureRecognizer is UIScreenEdgePanGestureRecognizer,
-              let gestureView = gestureRecognizer.view,
-              let navigationController = navigationController(containing: gestureView),
-              navigationController.view === gestureView,
-              navigationController.viewControllers.count > 1 else {
+            let gestureView = gestureRecognizer.view,
+            let navigationController = navigationController(containing: gestureView),
+            navigationController.view === gestureView,
+            navigationController.viewControllers.count > 1
+        else {
             return false
         }
 

@@ -2,7 +2,8 @@ import UIKit
 
 @MainActor
 extension CompactSidebarViewController {
-    func makeCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, Int> {
+    func makeCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, Int>
+    {
         UICollectionView.CellRegistration<UICollectionViewListCell, Int> {
             [weak self] cell, _, tabIndex in
             guard let self, self.tabs.indices.contains(tabIndex) else { return }
@@ -34,7 +35,9 @@ extension CompactSidebarViewController {
         }
     }
 
-    func makeHeaderRegistration() -> UICollectionView.SupplementaryRegistration<UICollectionViewListCell> {
+    func makeHeaderRegistration()
+        -> UICollectionView.SupplementaryRegistration<UICollectionViewListCell>
+    {
         UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
             elementKind: UICollectionView.elementKindSectionHeader
         ) { [weak self] supplementaryView, _, _ in
@@ -42,7 +45,9 @@ extension CompactSidebarViewController {
         }
     }
 
-    func makeFooterRegistration() -> UICollectionView.SupplementaryRegistration<UICollectionViewListCell> {
+    func makeFooterRegistration()
+        -> UICollectionView.SupplementaryRegistration<UICollectionViewListCell>
+    {
         UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
             elementKind: UICollectionView.elementKindSectionFooter
         ) { [weak self] supplementaryView, _, _ in
@@ -100,8 +105,9 @@ extension CompactSidebarViewController {
 
     func updateSelection(animated: Bool) {
         guard isViewLoaded,
-              let selectedTab,
-              let tabIndex = tabs.firstIndex(where: { $0 === selectedTab }) else {
+            let selectedTab,
+            let tabIndex = tabs.firstIndex(where: { $0 === selectedTab })
+        else {
             return
         }
 
@@ -115,7 +121,10 @@ extension CompactSidebarViewController {
 
 @MainActor
 extension CompactSidebarViewController: UICollectionViewDelegate {
-    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
         guard tabs.indices.contains(indexPath.item) else { return }
 
         let selectedTab = tabs[indexPath.item]

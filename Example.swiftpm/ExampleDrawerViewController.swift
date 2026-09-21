@@ -1,6 +1,6 @@
-import UIKit
-import SwiftUI
 import DrawerPresentation
+import SwiftUI
+import UIKit
 
 @MainActor
 class ExampleDrawerViewController: UIViewController {
@@ -95,7 +95,9 @@ final class PageViewController: ExampleDrawerViewController, UIPageViewControlle
         NSLayoutConstraint.activate([
             pageController.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             pageController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            view.safeAreaLayoutGuide.bottomAnchor.constraint(equalTo: pageController.view.bottomAnchor),
+            view.safeAreaLayoutGuide.bottomAnchor.constraint(
+                equalTo: pageController.view.bottomAnchor
+            ),
             view.trailingAnchor.constraint(equalTo: pageController.view.trailingAnchor),
         ])
         pageController.didMove(toParent: self)
@@ -120,7 +122,9 @@ final class PageViewController: ExampleDrawerViewController, UIPageViewControlle
         _ pageViewController: UIPageViewController,
         viewControllerAfter viewController: UIViewController
     ) -> UIViewController? {
-        guard let index = pages.firstIndex(where: { $0 === viewController }), index + 1 < pages.count else {
+        guard let index = pages.firstIndex(where: { $0 === viewController }),
+            index + 1 < pages.count
+        else {
             return nil
         }
         return pages[index + 1]

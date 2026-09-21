@@ -14,10 +14,18 @@ extension CompactSidebarViewController {
         materialBackgroundView.contentView.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: materialBackgroundView.contentView.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: materialBackgroundView.contentView.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: materialBackgroundView.contentView.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: materialBackgroundView.contentView.bottomAnchor),
+            collectionView.topAnchor.constraint(
+                equalTo: materialBackgroundView.contentView.topAnchor
+            ),
+            collectionView.leadingAnchor.constraint(
+                equalTo: materialBackgroundView.contentView.leadingAnchor
+            ),
+            collectionView.trailingAnchor.constraint(
+                equalTo: materialBackgroundView.contentView.trailingAnchor
+            ),
+            collectionView.bottomAnchor.constraint(
+                equalTo: materialBackgroundView.contentView.bottomAnchor
+            ),
         ])
     }
 
@@ -25,7 +33,7 @@ extension CompactSidebarViewController {
         guard isViewLoaded else { return }
 
         guard let bottomView else { return }
-        
+
         let toolbarItem = UIBarButtonItem(customView: bottomView)
         if #available(iOS 26.0, *) {
             toolbarItem.hidesSharedBackground = true

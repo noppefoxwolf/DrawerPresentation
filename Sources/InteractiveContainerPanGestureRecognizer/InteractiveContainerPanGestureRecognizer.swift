@@ -7,7 +7,9 @@ import UIKit
 
 /// A full-screen pan recognizer whose policies are supplied through `behavior`.
 @MainActor
-package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecognizer, UIGestureRecognizerDelegate {
+package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecognizer,
+    UIGestureRecognizerDelegate
+{
 
     enum Direction {
         case left
@@ -41,7 +43,9 @@ package final class InteractiveContainerPanGestureRecognizer: UIPanGestureRecogn
         return false
     }
 
-    package override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer) -> Bool {
+    package override func canBePrevented(by preventingGestureRecognizer: UIGestureRecognizer)
+        -> Bool
+    {
         if isDebugLoggingEnabled {
             print(
                 "[GestureDebug] canBePrevented "

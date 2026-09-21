@@ -54,10 +54,11 @@ private final class SplitPrimaryViewController: ExampleDrawerViewController {
         pushButton.configuration?.title = "Push child view"
         pushButton.addAction(
             UIAction { [weak self] _ in
-                self?.navigationController?.pushViewController(
-                    SplitPushedViewController(source: "Primary"),
-                    animated: true
-                )
+                self?.navigationController?
+                    .pushViewController(
+                        SplitPushedViewController(source: "Primary"),
+                        animated: true
+                    )
             },
             for: .primaryActionTriggered
         )
@@ -106,7 +107,8 @@ private final class SplitSupplementaryViewController: ExampleDrawerViewControlle
             for: .valueChanged
         )
 
-        twoBesideSecondarySwitch.isOn = splitViewController?.preferredDisplayMode == .twoBesideSecondary
+        twoBesideSecondarySwitch.isOn =
+            splitViewController?.preferredDisplayMode == .twoBesideSecondary
         twoBesideSecondarySwitch.accessibilityLabel = "Two beside secondary"
         twoBesideSecondarySwitch.addTarget(
             self,
@@ -180,7 +182,8 @@ private final class SplitSupplementaryViewController: ExampleDrawerViewControlle
 
     @objc
     private func twoBesideSecondarySwitchChanged(_ sender: UISwitch) {
-        splitViewController?.preferredDisplayMode = sender.isOn ? .twoBesideSecondary : .oneBesideSecondary
+        splitViewController?.preferredDisplayMode =
+            sender.isOn ? .twoBesideSecondary : .oneBesideSecondary
     }
 }
 
@@ -208,10 +211,11 @@ private final class SplitSecondaryViewController: ExampleDrawerViewController {
         pushButton.configuration?.title = "Push child view"
         pushButton.addAction(
             UIAction { [weak self] _ in
-                self?.navigationController?.pushViewController(
-                    SplitPushedViewController(source: "Secondary"),
-                    animated: true
-                )
+                self?.navigationController?
+                    .pushViewController(
+                        SplitPushedViewController(source: "Secondary"),
+                        animated: true
+                    )
             },
             for: .primaryActionTriggered
         )

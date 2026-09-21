@@ -1,5 +1,5 @@
-import UIKit
 import InteractiveContainerPanGestureRecognizer
+import UIKit
 
 @MainActor
 open class DrawerInteraction: NSObject, UIInteraction {
@@ -13,19 +13,19 @@ open class DrawerInteraction: NSObject, UIInteraction {
 
     /// Whether the presenting view moves to the right while the drawer is shown.
     public var movesPresentingView = true
-    
+
     let presentPanGesture = InteractiveContainerPanGestureRecognizer()
-    
+
     var transitionController: DrawerTransitionController? = nil
-    
+
     public init(delegate: any DrawerInteractionDelegate) {
         self.delegate = delegate
         super.init()
         presentPanGesture.addTarget(self, action: #selector(onPan))
     }
-    
+
     public weak var view: UIView? = nil
-    
+
     public func willMove(to view: UIView?) {
         self.view?.removeGestureRecognizer(presentPanGesture)
     }
@@ -36,15 +36,18 @@ open class DrawerInteraction: NSObject, UIInteraction {
         presentPanGesture.isEnabled = isEnabled
         view?.addGestureRecognizer(presentPanGesture)
     }
-    
+
     public func present() {
         present(isInteractiveTransitionEnabled: false)
     }
 
     private func present(isInteractiveTransitionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
-        guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else { return }
-        let drawerWidth = delegate?.drawerInteraction(self, widthForDrawer: vc)
+        guard let vc = delegate?.drawerInteraction(self, presentingViewControllerFor: parent) else {
+            return
+        }
+        let drawerWidth =
+            delegate?.drawerInteraction(self, widthForDrawer: vc)
             ?? DrawerTransitionController.defaultDrawerWidth
         transitionController = DrawerTransitionController(
             drawerWidth: drawerWidth,
@@ -58,7 +61,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
         vc.traitOverrides.userInterfaceLevel = .elevated
         parent.present(vc, animated: true)
     }
-    
+
     @objc
     private func onPan(_ gesture: UIPanGestureRecognizer) {
         switch gesture.state {

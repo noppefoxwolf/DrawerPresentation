@@ -12,19 +12,19 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     private var preparedTransitionID: ObjectIdentifier?
     private weak var preparedFromView: UIView?
     private weak var preparedToView: UIView?
-    
+
     init(drawerWidth: CGFloat, movesPresentingView: Bool) {
         self.drawerWidth = drawerWidth
         self.movesPresentingView = movesPresentingView
         super.init()
     }
-    
+
     func transitionDuration(
         using transitionContext: (any UIViewControllerContextTransitioning)?
     ) -> TimeInterval {
         0.3
     }
-    
+
     func animateTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
@@ -49,7 +49,8 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             return animator
         }
 
-        let duration = transitionContext.isAnimated
+        let duration =
+            transitionContext.isAnimated
             ? transitionDuration(using: transitionContext)
             : 0
         let curve: UIView.AnimationCurve = isInteractiveTransition ? .linear : .easeOut
@@ -81,14 +82,15 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             }
         }
         animator.addCompletion { [weak self] (_: UIViewAnimatingPosition) in
-            self?.completeTransition(
-                transitionContext,
-                fromView: views.fromView,
-                toView: views.toView,
-                drawerWidth: drawerWidth,
-                movesPresentingView: movesPresentingView,
-                isPresenting: isPresenting
-            )
+            self?
+                .completeTransition(
+                    transitionContext,
+                    fromView: views.fromView,
+                    toView: views.toView,
+                    drawerWidth: drawerWidth,
+                    movesPresentingView: movesPresentingView,
+                    isPresenting: isPresenting
+                )
         }
         transitionAnimator = animator
         return animator
@@ -107,8 +109,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     ) -> (fromView: UIView, toView: UIView)? {
         let transitionID = ObjectIdentifier(transitionContext as AnyObject)
         if preparedTransitionID == transitionID,
-           let fromView = preparedFromView,
-           let toView = preparedToView {
+            let fromView = preparedFromView,
+            let toView = preparedToView
+        {
             return (fromView, toView)
         }
 
@@ -117,9 +120,10 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         preparedToView = nil
 
         guard let fromViewController = transitionContext.viewController(forKey: .from),
-              let toViewController = transitionContext.viewController(forKey: .to),
-              let fromView = fromViewController.view,
-              let toView = toViewController.view else {
+            let toViewController = transitionContext.viewController(forKey: .to),
+            let fromView = fromViewController.view,
+            let toView = toViewController.view
+        else {
             return nil
         }
 
