@@ -91,7 +91,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 interactiveTransition.cancel()
             }
 
-        case .cancelled:
+        case .cancelled, .failed:
             transitionController?.interactiveTransition?.cancel()
 
         default:

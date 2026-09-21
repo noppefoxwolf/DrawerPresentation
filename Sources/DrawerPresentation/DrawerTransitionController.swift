@@ -21,6 +21,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
         animator.onAnimationEnded = { [weak self] _ in
             self?.interactiveTransition = nil
         }
+        animator.isInteractiveTransition = interactiveTransition != nil
         animator.isPresenting = true
         self.animator = animator
         return animator
@@ -52,6 +53,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     
     public func animationController(forDismissed dismissed: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
         animator?.isPresenting = false
+        animator?.isInteractiveTransition = interactiveTransition != nil
         return animator
     }
     

@@ -5,7 +5,13 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     let drawerWidth: CGFloat
     let movesPresentingView: Bool
     var isPresenting: Bool = true
+    var isInteractiveTransition = false
     var onAnimationEnded: ((Bool) -> Void)?
+
+    private var transitionAnimator: UIViewPropertyAnimator?
+    private var preparedTransitionID: ObjectIdentifier?
+    private weak var preparedFromView: UIView?
+    private weak var preparedToView: UIView?
     
     init(drawerWidth: CGFloat, movesPresentingView: Bool) {
         self.drawerWidth = drawerWidth
@@ -22,116 +28,144 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     func animateTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
+        interruptibleAnimator(using: transitionContext).startAnimation()
+    }
+
+    func interruptibleAnimator(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) -> any UIViewImplicitlyAnimating {
+        let transitionID = ObjectIdentifier(transitionContext as AnyObject)
+        if preparedTransitionID == transitionID, let transitionAnimator {
+            return transitionAnimator
+        }
+
+        guard let views = prepareViews(using: transitionContext) else {
+            let animator = UIViewPropertyAnimator(duration: 0, curve: .linear)
+            animator.addCompletion { [weak self] _ in
+                transitionContext.completeTransition(false)
+                self?.transitionAnimator = nil
+            }
+            transitionAnimator = animator
+            return animator
+        }
+
+        let duration = transitionContext.isAnimated
+            ? transitionDuration(using: transitionContext)
+            : 0
+        let curve: UIView.AnimationCurve = isInteractiveTransition ? .linear : .easeOut
+        let drawerWidth = self.drawerWidth
+        let movesPresentingView = self.movesPresentingView
+        let isPresenting = self.isPresenting
+
+        let animator = UIViewPropertyAnimator(
+            duration: duration,
+            curve: curve
+        ) {
+            if isPresenting {
+                views.toView.transform = .identity
+                if movesPresentingView {
+                    views.fromView.layer.transform = CATransform3DMakeTranslation(
+                        drawerWidth,
+                        0,
+                        0
+                    )
+                }
+            } else {
+                views.fromView.transform = CGAffineTransform(
+                    translationX: -drawerWidth,
+                    y: 0
+                )
+                if movesPresentingView {
+                    views.toView.layer.transform = CATransform3DIdentity
+                }
+            }
+        }
+        animator.addCompletion { [weak self] (_: UIViewAnimatingPosition) in
+            self?.completeTransition(
+                transitionContext,
+                fromView: views.fromView,
+                toView: views.toView,
+                drawerWidth: drawerWidth,
+                movesPresentingView: movesPresentingView,
+                isPresenting: isPresenting
+            )
+        }
+        transitionAnimator = animator
+        return animator
+    }
+
+    func animationEnded(_ transitionCompleted: Bool) {
+        transitionAnimator = nil
+        preparedTransitionID = nil
+        preparedFromView = nil
+        preparedToView = nil
+        onAnimationEnded?(transitionCompleted)
+    }
+
+    private func prepareViews(
+        using transitionContext: any UIViewControllerContextTransitioning
+    ) -> (fromView: UIView, toView: UIView)? {
+        let transitionID = ObjectIdentifier(transitionContext as AnyObject)
+        if preparedTransitionID == transitionID,
+           let fromView = preparedFromView,
+           let toView = preparedToView {
+            return (fromView, toView)
+        }
+
+        preparedTransitionID = transitionID
+        preparedFromView = nil
+        preparedToView = nil
+
         guard let fromViewController = transitionContext.viewController(forKey: .from),
               let toViewController = transitionContext.viewController(forKey: .to),
               let fromView = fromViewController.view,
               let toView = toViewController.view else {
-            transitionContext.completeTransition(false)
-            return
+            return nil
         }
 
-        if isPresenting {
-            animatePresentation(
-                fromView: fromView,
-                toView: toView,
-                toViewController: toViewController,
-                using: transitionContext
-            )
-        } else {
-            animateDismissal(
-                fromView: fromView,
-                toView: toView,
-                using: transitionContext
-            )
-        }
-    }
-
-    func animationEnded(_ transitionCompleted: Bool) {
-        onAnimationEnded?(transitionCompleted)
-    }
-
-    private func animatePresentation(
-        fromView: UIView,
-        toView: UIView,
-        toViewController: UIViewController,
-        using transitionContext: any UIViewControllerContextTransitioning
-    ) {
         let containerView = transitionContext.containerView
-        if toView.superview !== containerView {
-            containerView.addSubview(toView)
-        }
-        toView.frame = transitionContext.finalFrame(for: toViewController)
-        toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
-
-        let animations = {
-            toView.transform = .identity
-            if self.movesPresentingView {
-                // Workaround: view.transform can interfere with SwiftUI gestures.
-                fromView.layer.transform = CATransform3DMakeTranslation(self.drawerWidth, 0, 0)
+        if isPresenting {
+            if toView.superview !== containerView {
+                containerView.addSubview(toView)
             }
+            toView.frame = transitionContext.finalFrame(for: toViewController)
+            toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
         }
 
-        guard transitionContext.isAnimated else {
-            animations()
-            transitionContext.completeTransition(true)
-            return
-        }
-
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: animations,
-            completion: { [weak self] _ in
-                let cancelled = transitionContext.transitionWasCancelled
-                if cancelled {
-                    toView.transform = .identity
-                    if self?.movesPresentingView == true {
-                        fromView.layer.transform = CATransform3DIdentity
-                    }
-                    toView.removeFromSuperview()
-                }
-                transitionContext.completeTransition(!cancelled)
-            }
-        )
+        preparedFromView = fromView
+        preparedToView = toView
+        return (fromView, toView)
     }
 
-    private func animateDismissal(
+    private func completeTransition(
+        _ transitionContext: any UIViewControllerContextTransitioning,
         fromView: UIView,
         toView: UIView,
-        using transitionContext: any UIViewControllerContextTransitioning
+        drawerWidth: CGFloat,
+        movesPresentingView: Bool,
+        isPresenting: Bool
     ) {
-        let animations = {
-            fromView.transform = CGAffineTransform(translationX: -self.drawerWidth, y: 0)
-            if self.movesPresentingView {
-                toView.layer.transform = CATransform3DIdentity
-            }
-        }
-
-        guard transitionContext.isAnimated else {
-            animations()
-            fromView.removeFromSuperview()
-            transitionContext.completeTransition(true)
-            return
-        }
-
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: animations,
-            completion: { [weak self] _ in
-                let cancelled = transitionContext.transitionWasCancelled
-                if cancelled {
-                    fromView.transform = .identity
-                    if self?.movesPresentingView == true {
-                        toView.layer.transform = CATransform3DMakeTranslation(self?.drawerWidth ?? 0, 0, 0)
-                    }
-                } else {
-                    fromView.removeFromSuperview()
+        let cancelled = transitionContext.transitionWasCancelled
+        if cancelled {
+            if isPresenting {
+                toView.transform = .identity
+                if movesPresentingView {
+                    fromView.layer.transform = CATransform3DIdentity
                 }
-                transitionContext.completeTransition(!cancelled)
+                toView.removeFromSuperview()
+            } else {
+                fromView.transform = .identity
+                if movesPresentingView {
+                    toView.layer.transform = CATransform3DMakeTranslation(
+                        drawerWidth,
+                        0,
+                        0
+                    )
+                }
             }
-        )
+        } else if !isPresenting {
+            fromView.removeFromSuperview()
+        }
+        transitionContext.completeTransition(!cancelled)
     }
 }
