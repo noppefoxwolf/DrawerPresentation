@@ -148,7 +148,7 @@ public final class CompactSidebarViewController: UIViewController {
             cell.accessories = []
             cell.accessibilityIdentifier = "compactSidebar.tab.\(tabIndex)"
             cell.configurationUpdateHandler = { cell, state in
-                var content = UIListContentConfiguration.sidebarCell()
+                var content = UIListContentConfiguration.cell()
                 content.text = title
                 content.secondaryText = tab.subtitle
                 content.image = image
