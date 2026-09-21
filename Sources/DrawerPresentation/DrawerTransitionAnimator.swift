@@ -56,10 +56,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     func animatePresentTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
-        let fromView = transitionContext.viewController(forKey: .from)?.view
         let toView = transitionContext.viewController(forKey: .to)?.view
         
-        guard let fromView, let toView else { return }
+        guard let toView else { return }
         
         transitionContext.containerView.addSubview(dimmingView)
         dimmingView.translatesAutoresizingMaskIntoConstraints = false
@@ -85,11 +84,9 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             withDuration: transitionDuration(using: transitionContext),
             delay: 0,
             options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
+            animations: { [dimmingView] in
                 dimmingView.alpha = 1
                 toView.transform = .identity
-                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
             },
             completion: { [dimmingView, dismissPanGesture] _ in
                 if transitionContext.transitionWasCancelled {
@@ -107,9 +104,8 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
         let fromView = transitionContext.viewController(forKey: .from)?.view
-        let toView = transitionContext.viewController(forKey: .to)?.view
         
-        guard let fromView, let toView else { return }
+        guard let fromView else { return }
                         
         UIView.animate(
             withDuration: transitionDuration(using: transitionContext),
@@ -117,7 +113,6 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
             options: .curveEaseOut,
             animations: { [dimmingView, drawerWidth] in
                 dimmingView.alpha = 0
-                toView.transform = .identity
                 // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
                 fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
             },
