@@ -9,8 +9,8 @@ import UIKit
 extension InteractiveContainerPanGestureRecognizer {
 
     enum BehaviorEvent {
-        case shouldReceive(touch: UITouch, scrollView: UIScrollView?)
-        case shouldBegin(location: CGPoint, velocity: CGPoint, scrollView: UIScrollView?)
+        case shouldReceive(touch: UITouch, scrollViews: [UIScrollView])
+        case shouldBegin(location: CGPoint, velocity: CGPoint, scrollViews: [UIScrollView])
         case shouldRecognizeSimultaneously(other: UIGestureRecognizer)
         case shouldRequireFailureOf(other: UIGestureRecognizer)
         case shouldBeRequiredToFailBy(other: UIGestureRecognizer)
@@ -37,18 +37,17 @@ extension InteractiveContainerPanGestureRecognizer {
             Behavior(handler: handler)
         }
 
-        /// Gives the custom pan priority when the touched scroll view is at its edge.
+        /// Gives the custom pan priority when all ancestor scroll views are at their edges.
         static let scrollView = Behavior.custom { recognizer, event in
             switch event {
             case .shouldReceive(let touch, _):
                 recognizer.requireScrollViewsToWait(for: touch.view)
                 return .ignore
 
-            case .shouldBegin(_, _, let scrollView):
-                guard let scrollView else {
-                    return .ignore
-                }
-                return recognizer.isAtBoundary(of: scrollView) ? .ignore : .deny
+            case .shouldBegin(_, _, let scrollViews):
+                return scrollViews.contains {
+                    !recognizer.isAtBoundary(of: $0)
+                } ? .deny : .ignore
 
             default:
                 return .ignore
@@ -57,9 +56,9 @@ extension InteractiveContainerPanGestureRecognizer {
 
         /// Gives a scroll-style page view controller priority when a page exists in the swipe direction.
         static let pageViewController = Behavior.custom { recognizer, event in
-            guard case .shouldBegin(_, let velocity, let scrollView) = event,
+            guard case .shouldBegin(_, let velocity, let scrollViews) = event,
                   recognizer.matchesDirection(velocity),
-                  let scrollView,
+                  let scrollView = scrollViews.first,
                   let pageViewController = recognizer.pageViewController(containing: scrollView),
                   let currentViewController = pageViewController.viewControllers?.first,
                   let dataSource = pageViewController.dataSource else {
@@ -112,17 +111,18 @@ extension InteractiveContainerPanGestureRecognizer {
             return true
         }
 
-        trackedScrollView = nearestScrollView(from: touch.view)
+        trackedTouchView = touch.view
+        let scrollViews = ancestorScrollViews(from: touch.view)
         let event = BehaviorEvent.shouldReceive(
             touch: touch,
-            scrollView: trackedScrollView
+            scrollViews: scrollViews
         )
         let shouldReceive = !decisions(for: event).contains(where: isDenied)
         let location = touch.location(in: rootView)
         log(
             "shouldReceive touch location=\(location) "
                 + "view=\(viewDescription(touch.view)) "
-                + "scrollView=\(viewDescription(trackedScrollView)) "
+                + "scrollViews=[\(scrollViews.map { viewDescription($0) }.joined(separator: ", "))] "
                 + "-> \(shouldReceive)"
         )
         logGestureContext(at: location)
@@ -139,23 +139,36 @@ extension InteractiveContainerPanGestureRecognizer {
         return shouldBegin(
             location: location,
             velocity: velocity,
-            scrollView: trackedScrollView
+            scrollViews: ancestorScrollViews(from: trackedTouchView)
+        )
+    }
+
+    /// Compatibility overload for callers that only have one scroll view.
+    package func shouldBegin(
+        location: CGPoint,
+        velocity: CGPoint,
+        scrollView: UIScrollView?
+    ) -> Bool {
+        shouldBegin(
+            location: location,
+            velocity: velocity,
+            scrollViews: scrollView.map { [$0] } ?? []
         )
     }
 
     package func shouldBegin(
         location: CGPoint,
         velocity: CGPoint,
-        scrollView: UIScrollView?
+        scrollViews: [UIScrollView]
     ) -> Bool {
         let hasMatchingDirection = matchesDirection(velocity)
-        let isAtScrollViewBoundary = scrollView.map {
+        let isAtScrollViewBoundary = scrollViews.allSatisfy {
             isAtBoundary(of: $0)
-        } ?? true
+        }
         let event = BehaviorEvent.shouldBegin(
             location: location,
             velocity: velocity,
-            scrollView: scrollView
+            scrollViews: scrollViews
         )
         let shouldBegin = hasMatchingDirection
             && !decisions(for: event).contains(where: isDenied)
@@ -279,17 +292,18 @@ extension InteractiveContainerPanGestureRecognizer {
         }
     }
 
-    private func nearestScrollView(from view: UIView?) -> UIScrollView? {
+    private func ancestorScrollViews(from view: UIView?) -> [UIScrollView] {
+        var scrollViews: [UIScrollView] = []
         var currentView = view
 
         while let current = currentView {
             if let scrollView = current as? UIScrollView {
-                return scrollView
+                scrollViews.append(scrollView)
             }
             currentView = current.superview
         }
 
-        return nil
+        return scrollViews
     }
 
     fileprivate func pageViewController(containing view: UIView?) -> UIPageViewController? {
@@ -307,13 +321,8 @@ extension InteractiveContainerPanGestureRecognizer {
     }
 
     fileprivate func requireScrollViewsToWait(for view: UIView?) {
-        var currentView = view
-
-        while let current = currentView {
-            if let scrollView = current as? UIScrollView {
-                scrollView.panGestureRecognizer.require(toFail: self)
-            }
-            currentView = current.superview
+        for scrollView in ancestorScrollViews(from: view) {
+            scrollView.panGestureRecognizer.require(toFail: self)
         }
     }
 

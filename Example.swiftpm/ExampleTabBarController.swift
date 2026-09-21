@@ -39,11 +39,21 @@ final class ExampleTabBarController: UITabBarController {
             tag: 3
         )
 
+        let nestedCollectionViewController = UINavigationController(
+            rootViewController: NestedCollectionViewController()
+        )
+        nestedCollectionViewController.tabBarItem = UITabBarItem(
+            title: "Nested",
+            image: UIImage(systemName: "rectangle.stack"),
+            tag: 4
+        )
+
         viewControllers = [
             plainViewController,
             scrollViewController,
             pageViewController,
             splitViewController,
+            nestedCollectionViewController,
         ]
     }
 }
