@@ -58,7 +58,7 @@ open class DrawerInteraction: NSObject, UIInteraction {
         case .changed:
             if transitionController?.interactiveTransition == nil {
                 present(isInteractiveTransitoionEnabled: true)
-                transitionController?.interactiveTransition?.completionCurve = .linear
+                transitionController?.interactiveTransition?.completionCurve = .easeOut
                 transitionController?.interactiveTransition?.update(0)
             } else {
                 let x = gesture.translation(in: gesture.view).x
@@ -68,13 +68,21 @@ open class DrawerInteraction: NSObject, UIInteraction {
                 transitionController?.interactiveTransition?.update(percentComplete)
             }
         case .ended:
-            if gesture.velocity(in: gesture.view).x > 0 {
+            let velocity = gesture.velocity(in: gesture.view).x
+            let presentedViewController = delegate?.viewController(for: self)
+            let width = presentedViewController.map { delegate?.drawerInteraction(self, widthForDrawer: $0) }?.flatMap({ $0 }) ?? 300.0
+            transitionController?.setInteractiveSpring(progressVelocity: velocity / width)
+            if velocity > 0 {
                 transitionController?.interactiveTransition?.finish()
             } else {
                 transitionController?.interactiveTransition?.cancel()
             }
             transitionController?.interactiveTransition = nil
         case .cancelled:
+            let velocity = gesture.velocity(in: gesture.view).x
+            let presentedViewController = delegate?.viewController(for: self)
+            let width = presentedViewController.map { delegate?.drawerInteraction(self, widthForDrawer: $0) }?.flatMap({ $0 }) ?? 300.0
+            transitionController?.setInteractiveSpring(progressVelocity: velocity / width)
             transitionController?.interactiveTransition?.cancel()
             transitionController?.interactiveTransition = nil
         default:

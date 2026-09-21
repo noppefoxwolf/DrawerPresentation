@@ -4,8 +4,12 @@ import UIKit
 final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     let drawerWidth: Double
     var isPresenting: Bool = true
+    var isInteractiveTransition: Bool = false
     let dimmingView = DimmingView()
     let dismissPanGesture = UIPanGestureRecognizer()
+
+    private var transitionAnimator: UIViewPropertyAnimator?
+    private var hasPreparedTransition = false
     
     var dimmingTapInteraction: TapActionInteraction? {
         didSet {
@@ -46,90 +50,119 @@ final class DrawerTransitionAnimator: NSObject, UIViewControllerAnimatedTransiti
     func animateTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
-        if isPresenting {
-            animatePresentTransition(using: transitionContext)
-        } else {
-            dismissPresentTransition(using: transitionContext)
-        }
+        prepareTransition(using: transitionContext)
+        interruptibleAnimator(using: transitionContext).startAnimation()
     }
-    
-    func animatePresentTransition(
+
+    func interruptibleAnimator(
         using transitionContext: any UIViewControllerContextTransitioning
-    ) {
+    ) -> any UIViewImplicitlyAnimating {
+        prepareTransition(using: transitionContext)
+
+        if let transitionAnimator {
+            return transitionAnimator
+        }
+
         let fromView = transitionContext.viewController(forKey: .from)?.view
         let toView = transitionContext.viewController(forKey: .to)?.view
-        
-        guard let fromView, let toView else { return }
-        
-        transitionContext.containerView.addSubview(dimmingView)
-        dimmingView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            dimmingView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
-            transitionContext.containerView.bottomAnchor.constraint(equalTo: dimmingView.bottomAnchor),
-            dimmingView.leadingAnchor.constraint(equalTo: transitionContext.containerView.leadingAnchor),
-            transitionContext.containerView.trailingAnchor.constraint(equalTo: dimmingView.trailingAnchor),
-        ])
-        
-        transitionContext.containerView.addSubview(toView)
-        toView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            toView.leftAnchor.constraint(equalTo: transitionContext.containerView.leftAnchor),
-            toView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
-            toView.bottomAnchor.constraint(equalTo: transitionContext.containerView.bottomAnchor),
-            toView.widthAnchor.constraint(equalToConstant: drawerWidth)
-        ])
-        toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
-        dimmingView.alpha = 0
-        
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
+
+        guard let fromView, let toView else {
+            return UIViewPropertyAnimator(duration: 0, curve: .linear)
+        }
+
+        let drawerWidth = self.drawerWidth
+        let dimmingView = self.dimmingView
+        let isPresenting = self.isPresenting
+        let animations = {
+            if isPresenting {
                 dimmingView.alpha = 1
                 toView.transform = .identity
                 // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
                 fromView.layer.transform = CATransform3DMakeTranslation(drawerWidth, 0, 0)
-            },
-            completion: { [dimmingView, dismissPanGesture] _ in
+            } else {
+                dimmingView.alpha = 0
+                toView.transform = .identity
+                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
+                fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
+            }
+        }
+
+        let animator: UIViewPropertyAnimator
+        if isInteractiveTransition {
+            animator = UIViewPropertyAnimator(
+                duration: transitionDuration(using: transitionContext),
+                curve: .linear,
+                animations: animations
+            )
+        } else {
+            animator = UIViewPropertyAnimator(
+                duration: transitionDuration(using: transitionContext),
+                curve: .easeOut,
+                animations: animations
+            )
+        }
+
+        animator.addCompletion { [weak self, dimmingView, dismissPanGesture] _ in
+            guard let self else { return }
+
+            if isPresenting {
                 if transitionContext.transitionWasCancelled {
+                    fromView.layer.transform = CATransform3DIdentity
                     dimmingView.removeFromSuperview()
                     toView.removeFromSuperview()
                 } else {
                     transitionContext.containerView.addGestureRecognizer(dismissPanGesture)
                 }
-                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+            } else if transitionContext.transitionWasCancelled {
+                fromView.layer.transform = CATransform3DIdentity
+                dimmingView.alpha = 1
+            } else {
+                fromView.removeFromSuperview()
+                dimmingView.removeFromSuperview()
+                transitionContext.containerView.removeGestureRecognizer(dismissPanGesture)
             }
-        )
+
+            transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+            self.transitionAnimator = nil
+            self.hasPreparedTransition = false
+        }
+
+        transitionAnimator = animator
+        return animator
     }
-    
-    func dismissPresentTransition(
+
+    private func prepareTransition(
         using transitionContext: any UIViewControllerContextTransitioning
     ) {
-        let fromView = transitionContext.viewController(forKey: .from)?.view
-        let toView = transitionContext.viewController(forKey: .to)?.view
-        
-        guard let fromView, let toView else { return }
-                        
-        UIView.animate(
-            withDuration: transitionDuration(using: transitionContext),
-            delay: 0,
-            options: .curveEaseOut,
-            animations: { [dimmingView, drawerWidth] in
-                dimmingView.alpha = 0
-                toView.transform = .identity
-                // workaround: view.transform hangs SwiftUI gesture. use layer.transform instead view.transform.
-                fromView.layer.transform = CATransform3DMakeTranslation(-drawerWidth, 0, 0)
-            },
-            completion: { [dimmingView, dismissPanGesture] _ in
-                if transitionContext.transitionWasCancelled {
-                } else {
-                    fromView.removeFromSuperview()
-                    dimmingView.removeFromSuperview()
-                    transitionContext.containerView.removeGestureRecognizer(dismissPanGesture)
-                }
-                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
-            }
-        )
+        guard !hasPreparedTransition else { return }
+
+        guard let fromView = transitionContext.viewController(forKey: .from)?.view,
+              let toView = transitionContext.viewController(forKey: .to)?.view else {
+            return
+        }
+
+        if isPresenting {
+            transitionContext.containerView.addSubview(dimmingView)
+            dimmingView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                dimmingView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
+                transitionContext.containerView.bottomAnchor.constraint(equalTo: dimmingView.bottomAnchor),
+                dimmingView.leadingAnchor.constraint(equalTo: transitionContext.containerView.leadingAnchor),
+                transitionContext.containerView.trailingAnchor.constraint(equalTo: dimmingView.trailingAnchor),
+            ])
+
+            transitionContext.containerView.addSubview(toView)
+            toView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                toView.leftAnchor.constraint(equalTo: transitionContext.containerView.leftAnchor),
+                toView.topAnchor.constraint(equalTo: transitionContext.containerView.topAnchor),
+                toView.bottomAnchor.constraint(equalTo: transitionContext.containerView.bottomAnchor),
+                toView.widthAnchor.constraint(equalToConstant: drawerWidth)
+            ])
+            toView.transform = CGAffineTransform(translationX: -drawerWidth, y: 0)
+            dimmingView.alpha = 0
+        }
+
+        hasPreparedTransition = true
     }
 }

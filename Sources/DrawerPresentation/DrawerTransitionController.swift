@@ -11,6 +11,7 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
         let animator = DrawerTransitionAnimator(drawerWidth: drawerWidth)
+        animator.isInteractiveTransition = interactiveTransition != nil
         animator.dimmingTapInteraction = TapActionInteraction(action: { [weak presented] in
             presented?.dismiss(animated: true)
         })
@@ -19,20 +20,24 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
             switch gesture.state {
             case .began:
                 self.interactiveTransition = UIPercentDrivenInteractiveTransition()
-                self.interactiveTransition?.completionCurve = .linear
+                self.interactiveTransition?.completionCurve = .easeOut
                 presented?.dismiss(animated: true)
             case .changed:
                 let x = gesture.translation(in: gesture.view).x
                 let percentComplete = -min(x / drawerWidth, 0)
                 self.interactiveTransition?.update(percentComplete)
             case .ended:
-                if gesture.velocity(in: gesture.view).x < 0 {
+                let velocity = gesture.velocity(in: gesture.view).x
+                self.setInteractiveSpring(progressVelocity: -velocity / drawerWidth)
+                if velocity < 0 {
                     self.interactiveTransition?.finish()
                 } else {
                     self.interactiveTransition?.cancel()
                 }
                 self.interactiveTransition = nil
             case .cancelled:
+                let velocity = gesture.velocity(in: gesture.view).x
+                self.setInteractiveSpring(progressVelocity: -velocity / drawerWidth)
                 self.interactiveTransition?.cancel()
                 self.interactiveTransition = nil
             default:
@@ -54,7 +59,16 @@ public final class DrawerTransitionController: NSObject, UIViewControllerTransit
     
     public func animationController(forDismissed dismissed: UIViewController) -> (any UIViewControllerAnimatedTransitioning)? {
         animator?.isPresenting = false
+        animator?.isInteractiveTransition = interactiveTransition != nil
         return animator
+    }
+
+    func setInteractiveSpring(progressVelocity: CGFloat) {
+        let normalizedVelocity = min(max(progressVelocity, -3), 3)
+        interactiveTransition?.timingCurve = UISpringTimingParameters(
+            dampingRatio: 0.88,
+            initialVelocity: CGVector(dx: normalizedVelocity, dy: 0)
+        )
     }
     
     public func interactionControllerForDismissal(using animator: any UIViewControllerAnimatedTransitioning) -> (any UIViewControllerInteractiveTransitioning)? {
