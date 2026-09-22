@@ -82,10 +82,15 @@ public final class CompactSidebarViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    // `UIVerticalBarBehavior` was added to the UIKit module in the iOS 27.1 SDK.
+    // Xcode 27.0 also uses Swift 6.4, so a compiler-version check cannot
+    // distinguish the two SDKs here.
+    #if canImport(UIKit, _version: 9127.0.85)
     @available(iOS 27.1, *)
     public override var preferredVerticalBarBehavior: UIVerticalBarBehavior {
         .disabled
     }
+    #endif
 
     /// Creates a sidebar using the tab and sidebar configuration from a tab bar controller.
     public convenience init(tabBarController: UITabBarController) {
