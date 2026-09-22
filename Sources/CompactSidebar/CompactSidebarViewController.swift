@@ -46,6 +46,10 @@ public final class CompactSidebarViewController: UIViewController {
         view as! UIVisualEffectView
     }
 
+    internal let bottomViewContainer = UIView()
+    internal var bottomViewConstraints: [NSLayoutConstraint] = []
+    internal var bottomViewContainerHeightConstraint: NSLayoutConstraint?
+
     internal let collectionView: UICollectionView
 
     internal lazy var cellRegistration = makeCellRegistration()
@@ -124,5 +128,10 @@ public final class CompactSidebarViewController: UIViewController {
         setContentScrollView(collectionView, for: .bottom)
         applySnapshot()
         updateBottomView()
+    }
+
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateBottomViewInsets()
     }
 }
