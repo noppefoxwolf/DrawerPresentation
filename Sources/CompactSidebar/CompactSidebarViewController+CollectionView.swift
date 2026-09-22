@@ -60,6 +60,9 @@ extension CompactSidebarViewController {
         collectionView.delegate = self
         collectionView.allowsMultipleSelection = false
         collectionView.contentInsetAdjustmentBehavior = .automatic
+        if #available(iOS 26.0, *) {
+            collectionView.bottomEdgeEffect.style = .hard
+        }
 
         _ = cellRegistration
         _ = headerRegistration
