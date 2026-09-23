@@ -41,6 +41,8 @@ public final class AlternativeSidebar: SidebarInteraction {
     private var traitChangeRegistration: (any UITraitChangeRegistration)?
     private var userIsEnabled = true
     private var isAvailableForInteraction = false
+    private var previousTabBarIsHidden: Bool?
+    private var transitionIsPresenting: Bool?
 
     public override var isEnabled: Bool {
         get {
@@ -49,6 +51,35 @@ public final class AlternativeSidebar: SidebarInteraction {
         set {
             userIsEnabled = newValue
             super.isEnabled = userIsEnabled && isAvailableForInteraction
+        }
+    }
+
+    public override func presentationWillChange(isPresented: Bool) {
+        guard let tabBarController else { return }
+        if previousTabBarIsHidden == nil {
+            previousTabBarIsHidden = tabBarController.isTabBarHidden
+        }
+
+        transitionIsPresenting = isPresented
+        if isPresented {
+            tabBarController.setTabBarHidden(true, animated: true)
+        } else if let previousTabBarIsHidden {
+            tabBarController.setTabBarHidden(previousTabBarIsHidden, animated: true)
+        }
+    }
+
+    public override func presentationDidChange(isPresented: Bool) {
+        guard let tabBarController, let previousTabBarIsHidden else { return }
+
+        if isPresented, transitionIsPresenting == false {
+            tabBarController.setTabBarHidden(true, animated: true)
+        } else if !isPresented, transitionIsPresenting == true {
+            tabBarController.setTabBarHidden(previousTabBarIsHidden, animated: true)
+        }
+
+        if !isPresented {
+            self.previousTabBarIsHidden = nil
+            transitionIsPresenting = nil
         }
     }
 
