@@ -28,7 +28,8 @@ let package = Package(
             dependencies: ["InteractiveContainerPanGestureRecognizer"]
         ),
         .target(
-            name: "AlternativeSidebar"
+            name: "AlternativeSidebar",
+            dependencies: ["SidebarPresentation"]
         ),
         .testTarget(
             name: "SidebarPresentationTests",

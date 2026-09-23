@@ -1,22 +1,13 @@
 import AlternativeSidebar
-import SidebarPresentation
 import UIKit
 
 @MainActor
-final class ExampleTabBarController: UITabBarController, SidebarInteractionDelegate,
-    AlternativeSidebarViewControllerDelegate
-{
-    private lazy var sidebarInteraction = SidebarInteraction(
-        delegate: self,
-        presentation: .modal
-    )
-
+final class ExampleTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
         mode = .tabSidebar
 
-        view.addInteraction(sidebarInteraction)
         updateSidebarSettings()
 
         let plainViewController = UINavigationController(
@@ -104,65 +95,15 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
             if sidebar.isAvailable {
                 sidebar.isHidden.toggle()
             } else {
-                sidebarInteraction.present()
+                alternativeSidebar.isHidden.toggle()
             }
         } else {
-            sidebarInteraction.present()
+            alternativeSidebar.isHidden.toggle()
         }
     }
 
     func updateSidebarSettings() {
-        sidebarInteraction.isEnabled = ExampleSettings.shared.isSidebarEnabled
-    }
-
-    func viewController(for interaction: SidebarInteraction) -> UIViewController {
-        self
-    }
-
-    func sidebarInteraction(
-        _ interaction: SidebarInteraction,
-        widthForSidebar sidebarViewController: UIViewController
-    ) -> CGFloat {
-        SidebarTransitionController.defaultSidebarWidth
-    }
-
-    func sidebarInteraction(
-        _ interaction: SidebarInteraction,
-        presentingViewControllerFor viewController: UIViewController
-    ) -> UIViewController? {
-        let sidebarViewController = AlternativeSidebarViewController(
-            tabs: tabs,
-            selectedTab: selectedTab,
-            headerConfiguration: sidebar.headerContentConfiguration,
-            footerConfiguration: sidebar.footerContentConfiguration,
-            bottomView: ExampleSidebarBottomView()
-        )
-        sidebarViewController.delegate = self
-
-        let navigationController = UINavigationController(
-            rootViewController: sidebarViewController
-        )
-        let closeButton = UIBarButtonItem(
-            image: UIImage(systemName: "platter.filled.bottom.iphone"),
-            style: .plain,
-            target: nil,
-            action: nil
-        )
-        closeButton.accessibilityLabel = "Close Sidebar"
-        closeButton.primaryAction = UIAction { [weak navigationController] _ in
-            navigationController?.dismiss(animated: true)
-        }
-        sidebarViewController.navigationItem.rightBarButtonItem = closeButton
-
-        return navigationController
-    }
-
-    func alternativeSidebarViewController(
-        _ viewController: AlternativeSidebarViewController,
-        didSelect tab: UITab
-    ) {
-        selectedTab = tab
-        viewController.navigationController?.dismiss(animated: true)
+        alternativeSidebar.isEnabled = ExampleSettings.shared.isSidebarEnabled
     }
 
     private var sidebarHeaderConfiguration: UIContentConfiguration {
@@ -184,6 +125,10 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
         sidebar.headerContentConfiguration = sidebarHeaderConfiguration
         sidebar.footerContentConfiguration = sidebarFooterConfiguration
         sidebar.bottomBarView = ExampleSidebarBottomView()
+
+        alternativeSidebar.headerContentConfiguration = sidebarHeaderConfiguration
+        alternativeSidebar.footerContentConfiguration = sidebarFooterConfiguration
+        alternativeSidebar.bottomBarView = ExampleSidebarBottomView()
     }
 
     @objc
