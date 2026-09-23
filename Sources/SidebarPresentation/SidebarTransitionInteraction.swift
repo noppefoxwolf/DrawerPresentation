@@ -5,7 +5,7 @@ import UIKit
 open class SidebarInteraction: NSObject, UIInteraction {
     public weak var delegate: (any SidebarInteractionDelegate)? = nil
 
-    public var isEnabled: Bool = true {
+    open var isEnabled: Bool = true {
         didSet {
             updatePresentGestureState()
         }
