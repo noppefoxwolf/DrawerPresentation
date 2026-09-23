@@ -29,6 +29,10 @@ open class SidebarInteraction: NSObject, UIInteraction {
         presentPanGesture.addTarget(self, action: #selector(onPan))
     }
 
+    open func presentationWillChange(isPresented: Bool) {}
+
+    open func presentationDidChange(isPresented: Bool) {}
+
     public weak var view: UIView? = nil
 
     public func willMove(to view: UIView?) {
@@ -94,6 +98,12 @@ open class SidebarInteraction: NSObject, UIInteraction {
         if isInteractiveTransitionEnabled {
             transitionController.interactiveTransition = UIPercentDrivenInteractiveTransition()
         }
+        transitionController.onVisibilityWillChange = { [weak self] isVisible in
+            self?.presentationWillChange(isPresented: isVisible)
+        }
+        transitionController.onVisibilityChanged = { [weak self] isVisible in
+            self?.presentationDidChange(isPresented: isVisible)
+        }
         vc.modalPresentationStyle = .custom
         vc.transitioningDelegate = transitionController
         vc.traitOverrides.userInterfaceLevel = .elevated
@@ -127,8 +137,9 @@ open class SidebarInteraction: NSObject, UIInteraction {
             sidebarViewController: vc,
             sidebarWidth: width(for: vc)
         )
-        embeddedViewController.onVisibilityChanged = { [weak self] _ in
+        embeddedViewController.onVisibilityChanged = { [weak self] isVisible in
             self?.updatePresentGestureState()
+            self?.presentationDidChange(isPresented: isVisible)
         }
 
         parent.addChild(embeddedViewController)

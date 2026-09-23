@@ -42,6 +42,18 @@ public final class AlternativeSidebar: SidebarInteraction {
     private var userIsEnabled = true
     private var isAvailableForInteraction = false
 
+    private struct TabBarPresentationState {
+        let isHidden: Bool
+        let alpha: CGFloat
+        let transform: CGAffineTransform
+        let hiddenTransform: CGAffineTransform
+    }
+
+    private var tabBarPresentationState: TabBarPresentationState?
+    private var tabBarAnimator: UIViewPropertyAnimator?
+
+    private static let tabBarAnimationDuration: TimeInterval = 0.3
+
     public override var isEnabled: Bool {
         get {
             userIsEnabled && isAvailableForInteraction
@@ -50,6 +62,81 @@ public final class AlternativeSidebar: SidebarInteraction {
             userIsEnabled = newValue
             super.isEnabled = userIsEnabled && isAvailableForInteraction
         }
+    }
+
+    public override func presentationWillChange(isPresented: Bool) {
+        guard let tabBarController else { return }
+        let tabBar = tabBarController.tabBar
+
+        if isPresented {
+            if tabBarPresentationState == nil {
+                tabBarPresentationState = TabBarPresentationState(
+                    isHidden: tabBar.isHidden,
+                    alpha: tabBar.alpha,
+                    transform: tabBar.transform,
+                    hiddenTransform: tabBar.transform.translatedBy(
+                        x: 0,
+                        y: tabBar.bounds.height
+                    )
+                )
+            }
+
+            guard let state = tabBarPresentationState, !state.isHidden else { return }
+            tabBar.isHidden = false
+            animateTabBar(
+                tabBar,
+                alpha: 0,
+                transform: state.hiddenTransform
+            )
+        } else {
+            guard let state = tabBarPresentationState, !state.isHidden else { return }
+            tabBar.isHidden = false
+            animateTabBar(
+                tabBar,
+                alpha: state.alpha,
+                transform: state.transform
+            )
+        }
+    }
+
+    public override func presentationDidChange(isPresented: Bool) {
+        guard let tabBarController, let state = tabBarPresentationState else { return }
+        let tabBar = tabBarController.tabBar
+        tabBarAnimator?.stopAnimation(true)
+        tabBarAnimator = nil
+
+        if isPresented {
+            tabBar.alpha = 0
+            tabBar.transform = state.hiddenTransform
+            tabBar.isHidden = true
+        } else {
+            tabBar.isHidden = state.isHidden
+            tabBar.alpha = state.alpha
+            tabBar.transform = state.transform
+            tabBarPresentationState = nil
+        }
+    }
+
+    private func animateTabBar(
+        _ tabBar: UITabBar,
+        alpha: CGFloat,
+        transform: CGAffineTransform
+    ) {
+        tabBarAnimator?.stopAnimation(true)
+
+        let animator = UIViewPropertyAnimator(
+            duration: Self.tabBarAnimationDuration,
+            curve: .easeOut
+        ) {
+            tabBar.alpha = alpha
+            tabBar.transform = transform
+        }
+        tabBarAnimator = animator
+        animator.addCompletion { [weak self, weak animator] _ in
+            guard let self, self.tabBarAnimator === animator else { return }
+            self.tabBarAnimator = nil
+        }
+        animator.startAnimation()
     }
 
     public var headerContentConfiguration: UIContentConfiguration? {

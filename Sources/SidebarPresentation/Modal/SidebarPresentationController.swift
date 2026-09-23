@@ -7,6 +7,8 @@ final class SidebarPresentationController: UIPresentationController {
     private let dismissPanGesture = UIPanGestureRecognizer()
 
     var onDismissGesture: ((UIPanGestureRecognizer) -> Void)?
+    var onVisibilityWillChange: ((Bool) -> Void)?
+    var onVisibilityChanged: ((Bool) -> Void)?
 
     init(
         presentedViewController: UIViewController,
@@ -45,6 +47,7 @@ final class SidebarPresentationController: UIPresentationController {
     override func presentationTransitionWillBegin() {
         guard let containerView else { return }
 
+        onVisibilityWillChange?(true)
         dimmingView.frame = containerView.bounds
         dimmingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         dimmingView.alpha = 0
@@ -63,15 +66,19 @@ final class SidebarPresentationController: UIPresentationController {
     override func presentationTransitionDidEnd(_ completed: Bool) {
         super.presentationTransitionDidEnd(completed)
         guard completed else {
+            onVisibilityChanged?(false)
             dimmingView.removeFromSuperview()
             return
         }
 
+        onVisibilityChanged?(true)
         containerView?.addGestureRecognizer(dismissPanGesture)
     }
 
     override func dismissalTransitionWillBegin() {
         super.dismissalTransitionWillBegin()
+
+        onVisibilityWillChange?(false)
 
         guard let coordinator = presentedViewController.transitionCoordinator else {
             dimmingView.alpha = 0
@@ -87,9 +94,11 @@ final class SidebarPresentationController: UIPresentationController {
         super.dismissalTransitionDidEnd(completed)
 
         if completed {
+            onVisibilityChanged?(false)
             containerView?.removeGestureRecognizer(dismissPanGesture)
             dimmingView.removeFromSuperview()
         } else {
+            onVisibilityChanged?(true)
             dimmingView.alpha = 1
         }
     }

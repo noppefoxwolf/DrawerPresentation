@@ -7,6 +7,8 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
     let sidebarWidth: CGFloat
     var animator: SidebarTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
+    var onVisibilityWillChange: ((Bool) -> Void)?
+    var onVisibilityChanged: ((Bool) -> Void)?
 
     public init(sidebarWidth: CGFloat = SidebarTransitionController.defaultSidebarWidth) {
         self.sidebarWidth = sidebarWidth
@@ -37,6 +39,8 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
             presenting: presenting,
             sidebarWidth: sidebarWidth
         )
+        presentationController.onVisibilityWillChange = onVisibilityWillChange
+        presentationController.onVisibilityChanged = onVisibilityChanged
         presentationController.onDismissGesture = { [weak self, weak presented] gesture in
             self?.handleDismissGesture(gesture, presented: presented)
         }
