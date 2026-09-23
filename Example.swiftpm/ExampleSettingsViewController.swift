@@ -5,7 +5,6 @@ final class ExampleSettings {
     static let shared = ExampleSettings()
 
     var isSidebarEnabled = true
-    var movesPresentingView = false
 
     private init() {}
 }
@@ -14,7 +13,6 @@ final class ExampleSettings {
 final class ExampleSettingsViewController: UIViewController {
     private let settings = ExampleSettings.shared
     private let sidebarEnabledSwitch = UISwitch()
-    private let movesPresentingViewSwitch = UISwitch()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,26 +34,13 @@ final class ExampleSettingsViewController: UIViewController {
             for: .valueChanged
         )
 
-        movesPresentingViewSwitch.isOn = settings.movesPresentingView
-        movesPresentingViewSwitch.accessibilityLabel = "Move presenting view"
-        movesPresentingViewSwitch.addTarget(
-            self,
-            action: #selector(movesPresentingViewSwitchChanged),
-            for: .valueChanged
-        )
-
         let sidebarEnabledRow = makeSwitchRow(
             title: "Enable Sidebar",
             detail: "Allow swiping from the edge to open the sidebar.",
             control: sidebarEnabledSwitch
         )
-        let movesPresentingViewRow = makeSwitchRow(
-            title: "Move presenting view",
-            detail: "Move the current screen along with the sidebar.",
-            control: movesPresentingViewSwitch
-        )
 
-        let rows = UIStackView(arrangedSubviews: [sidebarEnabledRow, movesPresentingViewRow])
+        let rows = UIStackView(arrangedSubviews: [sidebarEnabledRow])
         rows.axis = .vertical
         rows.spacing = 12
 
@@ -108,9 +93,4 @@ final class ExampleSettingsViewController: UIViewController {
         (tabBarController as? ExampleTabBarController)?.updateSidebarSettings()
     }
 
-    @objc
-    private func movesPresentingViewSwitchChanged(_ sender: UISwitch) {
-        settings.movesPresentingView = sender.isOn
-        (tabBarController as? ExampleTabBarController)?.updateSidebarSettings()
-    }
 }

@@ -5,14 +5,11 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
     public static let defaultSidebarWidth: CGFloat = 320
 
     let sidebarWidth: CGFloat
-    /// Whether the presenting view moves to the right while the sidebar is shown.
-    public var movesPresentingView: Bool
     var animator: SidebarTransitionAnimator? = nil
     var interactiveTransition: UIPercentDrivenInteractiveTransition? = nil
 
-    public init(sidebarWidth: CGFloat = 320, movesPresentingView: Bool = true) {
+    public init(sidebarWidth: CGFloat = SidebarTransitionController.defaultSidebarWidth) {
         self.sidebarWidth = sidebarWidth
-        self.movesPresentingView = movesPresentingView
     }
 
     public func animationController(
@@ -20,10 +17,7 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
         presenting: UIViewController,
         source: UIViewController
     ) -> (any UIViewControllerAnimatedTransitioning)? {
-        let animator = SidebarTransitionAnimator(
-            sidebarWidth: sidebarWidth,
-            movesPresentingView: movesPresentingView
-        )
+        let animator = SidebarTransitionAnimator(sidebarWidth: sidebarWidth)
         animator.onAnimationEnded = { [weak self] _ in
             self?.interactiveTransition = nil
         }
@@ -83,9 +77,11 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
         _ gesture: UIPanGestureRecognizer,
         presented: UIViewController?
     ) {
-        let width = max(sidebarWidth, 1)
         let translation = gesture.translation(in: gesture.view).x
-        let fractionCompleted = min(max(-translation / width, 0), 1)
+        let fractionCompleted = SidebarGestureMetrics.dismissalProgress(
+            translation: translation,
+            width: sidebarWidth
+        )
 
         switch gesture.state {
         case .began:
@@ -102,7 +98,10 @@ public final class SidebarTransitionController: NSObject, UIViewControllerTransi
         case .ended:
             guard let interactiveTransition else { return }
             let velocity = gesture.velocity(in: gesture.view).x
-            if velocity < 0 || fractionCompleted >= 0.5 {
+            if SidebarGestureMetrics.shouldFinishDismissal(
+                velocity: velocity,
+                progress: fractionCompleted
+            ) {
                 interactiveTransition.finish()
             } else {
                 interactiveTransition.cancel()

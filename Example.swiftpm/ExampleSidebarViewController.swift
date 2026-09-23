@@ -8,7 +8,6 @@ class ExampleSidebarViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        applySidebarSettings()
         view.backgroundColor = .systemBackground
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -26,7 +25,6 @@ class ExampleSidebarViewController: UIViewController {
     }
 
     func presentSidebarManually() {
-        applySidebarSettings()
         let viewController = UIHostingController(rootView: Text("Presented manually"))
         viewController.modalPresentationStyle = .custom
         viewController.transitioningDelegate = manualTransitionDelegate
@@ -37,9 +35,6 @@ class ExampleSidebarViewController: UIViewController {
         (tabBarController as? ExampleTabBarController)?.presentSidebar()
     }
 
-    private func applySidebarSettings() {
-        manualTransitionDelegate.movesPresentingView = ExampleSettings.shared.movesPresentingView
-    }
 }
 
 @MainActor
