@@ -1,69 +1,148 @@
 # SidebarPresentation
 
-SidebarPresentation is a library that provides a customizable sidebar presentation style for iOS applications.
+SidebarPresentation is a UIKit library for building interactive sidebars on iOS.
 
-![](https://github.com/noppefoxwolf/SidebarPresentation/blob/main/.github/example.gif)
+Supports iOS 18 and later.
+
+![SidebarPresentation example](.github/example.gif)
+
+## Products
+
+The package provides two layers:
+
+| Product | Use it when |
+| --- | --- |
+| `AlternativeSidebar` | You want a ready-to-use sidebar for a `UITabBarController` with native-sidebar fallback support. |
+| `SidebarPresentation` | You want to provide your own sidebar view controller, presentation style, width, or transition behavior. |
+
+`AlternativeSidebar` uses `SidebarPresentation` internally.
 
 ## Installation
 
+Add the package to your Swift package dependencies:
+
+```swift
+dependencies: [
+    .package(
+        url: "https://github.com/noppefoxwolf/SidebarPresentation",
+        from: "0.5.0"
+    )
+]
 ```
+
+Then choose the product that matches your needs:
+
+```swift
 .target(
-    name: "YourProject",
+    name: "YourApp",
     dependencies: [
-        .package(url: "https://github.com/noppefoxwolf/SidebarPresentation", from: "0.5.0")
+        .product(
+            name: "AlternativeSidebar",
+            package: "SidebarPresentation"
+        )
     ]
 )
 ```
 
-## Usage
+Use `.product(name: "SidebarPresentation", package: "SidebarPresentation")` instead when building a custom presentation.
+
+## Ready-to-use sidebar
+
+Import `AlternativeSidebar` and access the convenience APIs on your tab bar controller:
 
 ```swift
+import AlternativeSidebar
+import UIKit
 
-// Add Interaction. Choose one presentation mode when creating it.
-let interaction = SidebarInteraction(
-    delegate: self,
-    presentation: .modal
-)
-view.addInteraction(interaction)
+@MainActor
+final class TabBarController: UITabBarController {
+    func presentSidebar() {
+        preferredSidebar.isHidden.toggle()
+    }
 
-// Delegate Example
-extension ViewController: SidebarInteractionDelegate {
+    func configureSidebars() {
+        let header = UIListContentConfiguration.header()
+        let footer = UIListContentConfiguration.footer()
+
+        // Configure the native and alternative sidebars independently.
+        sidebar.headerContentConfiguration = header
+        sidebar.footerContentConfiguration = footer
+        sidebar.bottomBarView = makeSidebarBottomView()
+
+        alternativeSidebar.headerContentConfiguration = header
+        alternativeSidebar.footerContentConfiguration = footer
+        alternativeSidebar.bottomBarView = makeSidebarBottomView()
+    }
+
+    private func makeSidebarBottomView() -> UIView {
+        UIView()
+    }
+}
+```
+
+`preferredSidebar` presents the native `sidebar` when it is available on iOS 27 and later. Otherwise, it presents `alternativeSidebar`. On iOS 26 and earlier, the alternative interaction is enabled only in a compact horizontal size class.
+
+Accessing `alternativeSidebar` creates and installs its interaction automatically. It provides configuration for the header, footer, and bottom view, manages tab selection, and dismisses the sidebar after a tab is selected.
+
+Use `alternativeSidebar.isEnabled` to disable the fallback interaction and `alternativeSidebar.isHidden` to control it directly.
+
+## Custom presentation
+
+Use the `SidebarPresentation` product when you need full control over the sidebar view controller and presentation behavior:
+
+```swift
+import SidebarPresentation
+import UIKit
+
+@MainActor
+final class ViewController: UIViewController, SidebarInteractionDelegate {
+    private lazy var sidebarInteraction = SidebarInteraction(
+        delegate: self,
+        presentation: .modal
+    )
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.addInteraction(sidebarInteraction)
+    }
+
+    func presentSidebar() {
+        sidebarInteraction.present()
+    }
+
     func viewController(for interaction: SidebarInteraction) -> UIViewController {
         self
     }
-    
-    func sidebarInteraction(_ interaction: SidebarInteraction, widthForSidebar sidebarViewController: UIViewController) -> CGFloat {
+
+    func sidebarInteraction(
+        _ interaction: SidebarInteraction,
+        widthForSidebar sidebarViewController: UIViewController
+    ) -> CGFloat {
         SidebarTransitionController.defaultSidebarWidth
     }
-    
-    func sidebarInteraction(_ interaction: SidebarInteraction, presentingViewControllerFor viewController: UIViewController) -> UIViewController? {
-        UIHostingController(rootView: Text("Interactive side menu"))
+
+    func sidebarInteraction(
+        _ interaction: SidebarInteraction,
+        presentingViewControllerFor viewController: UIViewController
+    ) -> UIViewController? {
+        CustomSidebarViewController()
     }
 }
+```
 
-// Perform interaction manually
-interaction.present()
+Choose `.embedded` instead of `.modal` when the sidebar should be embedded in the presenting view controller:
 
-// For child view controller containment, use this instead:
+```swift
 let interaction = SidebarInteraction(
     delegate: self,
     presentation: .embedded
 )
 view.addInteraction(interaction)
-
-// Using transitioningDelegate directly
-self.transitionController = SidebarTransitionController()
-let vc = UIHostingController(rootView: Text("Hello, World!!"))
-vc.modalPresentationStyle = .custom
-vc.transitioningDelegate = transitionController
-present(vc, animated: true)
 ```
 
-## Contributing
+For lower-level transition control, use `SidebarTransitionController` directly as a view controller transitioning delegate.
 
-Let people know how they can contribute into your project. A contributing guideline will be a big plus.
-
-## Build and Test
+## Build and test
 
 This repository is an iOS Swift package. Use `xcodebuild` with an iOS Simulator destination.
 
@@ -73,7 +152,7 @@ List available simulator destinations:
 xcodebuild -scheme SidebarPresentation -sdk iphonesimulator -showdestinations
 ```
 
-Build for the iOS Simulator:
+Build the package:
 
 ```sh
 xcodebuild \
@@ -82,7 +161,7 @@ xcodebuild \
     build
 ```
 
-Run tests on a specific available simulator:
+Run tests on a specific simulator:
 
 ```sh
 xcodebuild \
@@ -90,8 +169,6 @@ xcodebuild \
     -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
     test
 ```
-
-Replace the simulator name and OS version with a destination returned by `-showdestinations` when necessary.
 
 Build the Example app:
 
@@ -103,7 +180,11 @@ xcodebuild \
     build
 ```
 
-## Apps Using
+## Contributing
+
+Bug reports and pull requests are welcome.
+
+## Apps using SidebarPresentation
 
 <p float="left">
     <a href="https://apps.apple.com/app/id1668645019"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ca/79/32/ca7932c7-ee99-02e8-4164-2a5a99828070/AppIcon-0-1x_U007epad-0-1-P3-85-220-0.png/100x100bb.jpg" height="65"></a>
