@@ -19,9 +19,11 @@ SidebarPresentation is a library that provides a customizable sidebar presentati
 
 ```swift
 
-// Add Interaction
-let interaction = SidebarInteraction(delegate: self)
-interaction.movesPresentingView = false
+// Add Interaction. Choose one presentation mode when creating it.
+let interaction = SidebarInteraction(
+    delegate: self,
+    presentation: .modal(movesPresentingView: false)
+)
 view.addInteraction(interaction)
 
 // Delegate Example
@@ -41,6 +43,13 @@ extension ViewController: SidebarInteractionDelegate {
 
 // Perform interaction manually
 interaction.present()
+
+// For child view controller containment, use this instead:
+let interaction = SidebarInteraction(
+    delegate: self,
+    presentation: .embedded
+)
+view.addInteraction(interaction)
 
 // Using transitioningDelegate directly
 self.transitionController = SidebarTransitionController(
