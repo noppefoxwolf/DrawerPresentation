@@ -91,15 +91,7 @@ final class ExampleTabBarController: UITabBarController {
 
     func presentSidebar() {
         updateSidebarSettings()
-        if #available(iOS 27.0, *) {
-            if sidebar.isAvailable {
-                sidebar.isHidden.toggle()
-            } else {
-                alternativeSidebar.isHidden.toggle()
-            }
-        } else {
-            alternativeSidebar.isHidden.toggle()
-        }
+        preferredSidebar.isHidden.toggle()
     }
 
     func updateSidebarSettings() {
