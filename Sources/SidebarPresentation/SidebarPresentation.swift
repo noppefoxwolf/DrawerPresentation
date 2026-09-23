@@ -1,6 +1,6 @@
 import Foundation
 
 public enum SidebarPresentation: Sendable, Equatable {
-    case modal(movesPresentingView: Bool)
+    case modal
     case embedded
 }

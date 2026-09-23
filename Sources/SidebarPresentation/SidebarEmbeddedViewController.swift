@@ -9,6 +9,7 @@ final class SidebarEmbeddedViewController: UIViewController {
 
     private let dimmingView = DimmingView()
     private let dismissPanGesture = UIPanGestureRecognizer()
+    private let motion: SidebarPresentationMotion
     private var presentationAnimator: UIViewPropertyAnimator?
     private var animationStartProgress: CGFloat = 0
     private var animationTargetProgress: CGFloat = 0
@@ -19,6 +20,7 @@ final class SidebarEmbeddedViewController: UIViewController {
     init(sidebarViewController: UIViewController, sidebarWidth: CGFloat) {
         self.sidebarViewController = sidebarViewController
         self.sidebarWidth = sidebarWidth
+        motion = SidebarPresentationMotion(sidebarWidth: sidebarWidth)
         super.init(nibName: nil, bundle: nil)
 
         dismissPanGesture.addTarget(self, action: #selector(onDismissPan))
@@ -103,7 +105,7 @@ final class SidebarEmbeddedViewController: UIViewController {
     }
 
     private var effectiveSidebarWidth: CGFloat {
-        min(max(sidebarWidth, 0), view.bounds.width)
+        motion.sidebarWidth(in: view.bounds)
     }
 
     private func animate(to targetProgress: CGFloat, animated: Bool) {
@@ -123,7 +125,10 @@ final class SidebarEmbeddedViewController: UIViewController {
         animationStartProgress = startProgress
         animationTargetProgress = targetProgress
 
-        let animator = UIViewPropertyAnimator(duration: 0.3, curve: .easeOut) {
+        let animator = UIViewPropertyAnimator(
+            duration: SidebarPresentationMotion.animationDuration,
+            curve: SidebarPresentationMotion.animationCurve
+        ) {
             [weak self] in
             guard let self else { return }
             self.presentationProgress = targetProgress
@@ -160,15 +165,11 @@ final class SidebarEmbeddedViewController: UIViewController {
     private func updateViewForProgress() {
         guard isViewLoaded else { return }
 
-        dimmingView.frame = view.bounds
-        dimmingView.alpha = presentationProgress
-
-        let width = effectiveSidebarWidth
-        sidebarViewController.view.frame = CGRect(
-            x: -width + width * presentationProgress,
-            y: view.bounds.minY,
-            width: width,
-            height: view.bounds.height
+        motion.apply(
+            progress: presentationProgress,
+            sidebarView: sidebarViewController.view,
+            dimmingView: dimmingView,
+            in: view.bounds
         )
     }
 
@@ -181,9 +182,11 @@ final class SidebarEmbeddedViewController: UIViewController {
 
     @objc
     private func onDismissPan(_ gesture: UIPanGestureRecognizer) {
-        let width = max(effectiveSidebarWidth, 1)
         let translation = gesture.translation(in: view).x
-        let fractionCompleted = min(max(-translation / width, 0), 1)
+        let fractionCompleted = SidebarGestureMetrics.dismissalProgress(
+            translation: translation,
+            width: effectiveSidebarWidth
+        )
 
         switch gesture.state {
         case .began:
@@ -196,7 +199,10 @@ final class SidebarEmbeddedViewController: UIViewController {
 
         case .ended:
             let velocity = gesture.velocity(in: view).x
-            if velocity < 0 || fractionCompleted >= 0.5 {
+            if SidebarGestureMetrics.shouldFinishDismissal(
+                velocity: velocity,
+                progress: fractionCompleted
+            ) {
                 animate(to: 0, animated: true)
             } else {
                 animate(to: 1, animated: true)

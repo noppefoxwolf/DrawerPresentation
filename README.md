@@ -22,7 +22,7 @@ SidebarPresentation is a library that provides a customizable sidebar presentati
 // Add Interaction. Choose one presentation mode when creating it.
 let interaction = SidebarInteraction(
     delegate: self,
-    presentation: .modal(movesPresentingView: false)
+    presentation: .modal
 )
 view.addInteraction(interaction)
 
@@ -52,9 +52,7 @@ let interaction = SidebarInteraction(
 view.addInteraction(interaction)
 
 // Using transitioningDelegate directly
-self.transitionController = SidebarTransitionController(
-    movesPresentingView: false
-)
+self.transitionController = SidebarTransitionController()
 let vc = UIHostingController(rootView: Text("Hello, World!!"))
 vc.modalPresentationStyle = .custom
 vc.transitioningDelegate = transitionController

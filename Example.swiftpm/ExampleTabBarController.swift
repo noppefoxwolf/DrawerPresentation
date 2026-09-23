@@ -6,19 +6,16 @@ import UIKit
 final class ExampleTabBarController: UITabBarController, SidebarInteractionDelegate,
     CompactSidebarViewControllerDelegate
 {
-    private var sidebarInteraction: SidebarInteraction!
+    private lazy var sidebarInteraction = SidebarInteraction(
+        delegate: self,
+        presentation: .modal
+    )
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         mode = .tabSidebar
 
-        sidebarInteraction = SidebarInteraction(
-            delegate: self,
-            presentation: .modal(
-                movesPresentingView: ExampleSettings.shared.movesPresentingView
-            )
-        )
         view.addInteraction(sidebarInteraction)
         updateSidebarSettings()
 
@@ -116,18 +113,6 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
 
     func updateSidebarSettings() {
         sidebarInteraction.isEnabled = ExampleSettings.shared.isSidebarEnabled
-        let presentation = SidebarPresentation.modal(
-            movesPresentingView: ExampleSettings.shared.movesPresentingView
-        )
-        guard sidebarInteraction.presentation != presentation else { return }
-
-        view.removeInteraction(sidebarInteraction)
-        sidebarInteraction = SidebarInteraction(
-            delegate: self,
-            presentation: presentation
-        )
-        sidebarInteraction.isEnabled = ExampleSettings.shared.isSidebarEnabled
-        view.addInteraction(sidebarInteraction)
     }
 
     func viewController(for interaction: SidebarInteraction) -> UIViewController {

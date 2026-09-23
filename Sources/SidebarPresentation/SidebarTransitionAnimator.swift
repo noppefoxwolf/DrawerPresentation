@@ -2,8 +2,7 @@ import UIKit
 
 @MainActor
 final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
-    let sidebarWidth: CGFloat
-    let movesPresentingView: Bool
+    let motion: SidebarPresentationMotion
     var isPresenting: Bool = true
     var isInteractiveTransition = false
     var onAnimationEnded: ((Bool) -> Void)?
@@ -13,16 +12,15 @@ final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransit
     private weak var preparedFromView: UIView?
     private weak var preparedToView: UIView?
 
-    init(sidebarWidth: CGFloat, movesPresentingView: Bool) {
-        self.sidebarWidth = sidebarWidth
-        self.movesPresentingView = movesPresentingView
+    init(sidebarWidth: CGFloat) {
+        motion = SidebarPresentationMotion(sidebarWidth: sidebarWidth)
         super.init()
     }
 
     func transitionDuration(
         using transitionContext: (any UIViewControllerContextTransitioning)?
     ) -> TimeInterval {
-        0.3
+        SidebarPresentationMotion.animationDuration
     }
 
     func animateTransition(
@@ -53,32 +51,27 @@ final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransit
             transitionContext.isAnimated
             ? transitionDuration(using: transitionContext)
             : 0
-        let curve: UIView.AnimationCurve = isInteractiveTransition ? .linear : .easeOut
-        let sidebarWidth = self.sidebarWidth
-        let movesPresentingView = self.movesPresentingView
+        let curve: UIView.AnimationCurve = isInteractiveTransition
+            ? .linear
+            : SidebarPresentationMotion.animationCurve
         let isPresenting = self.isPresenting
+        let motion = self.motion
+        let containerBounds = transitionContext.containerView.bounds
 
         let animator = UIViewPropertyAnimator(
             duration: duration,
             curve: curve
         ) {
             if isPresenting {
-                views.toView.transform = .identity
-                if movesPresentingView {
-                    views.fromView.layer.transform = CATransform3DMakeTranslation(
-                        sidebarWidth,
-                        0,
-                        0
-                    )
-                }
-            } else {
-                views.fromView.transform = CGAffineTransform(
-                    translationX: -sidebarWidth,
-                    y: 0
+                views.toView.frame = motion.sidebarFrame(
+                    progress: 1,
+                    in: containerBounds
                 )
-                if movesPresentingView {
-                    views.toView.layer.transform = CATransform3DIdentity
-                }
+            } else {
+                views.fromView.frame = motion.sidebarFrame(
+                    progress: 0,
+                    in: containerBounds
+                )
             }
         }
         animator.addCompletion { [weak self] (_: UIViewAnimatingPosition) in
@@ -87,8 +80,6 @@ final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransit
                     transitionContext,
                     fromView: views.fromView,
                     toView: views.toView,
-                    sidebarWidth: sidebarWidth,
-                    movesPresentingView: movesPresentingView,
                     isPresenting: isPresenting
                 )
         }
@@ -132,8 +123,9 @@ final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransit
             if toView.superview !== containerView {
                 containerView.addSubview(toView)
             }
-            toView.frame = transitionContext.finalFrame(for: toViewController)
-            toView.transform = CGAffineTransform(translationX: -sidebarWidth, y: 0)
+            toView.frame = motion.sidebarFrame(progress: 0, in: containerView.bounds)
+        } else {
+            fromView.frame = transitionContext.initialFrame(for: fromViewController)
         }
 
         preparedFromView = fromView
@@ -145,27 +137,17 @@ final class SidebarTransitionAnimator: NSObject, UIViewControllerAnimatedTransit
         _ transitionContext: any UIViewControllerContextTransitioning,
         fromView: UIView,
         toView: UIView,
-        sidebarWidth: CGFloat,
-        movesPresentingView: Bool,
         isPresenting: Bool
     ) {
         let cancelled = transitionContext.transitionWasCancelled
         if cancelled {
             if isPresenting {
-                toView.transform = .identity
-                if movesPresentingView {
-                    fromView.layer.transform = CATransform3DIdentity
-                }
                 toView.removeFromSuperview()
             } else {
-                fromView.transform = .identity
-                if movesPresentingView {
-                    toView.layer.transform = CATransform3DMakeTranslation(
-                        sidebarWidth,
-                        0,
-                        0
-                    )
-                }
+                fromView.frame = motion.sidebarFrame(
+                    progress: 1,
+                    in: transitionContext.containerView.bounds
+                )
             }
         } else if !isPresenting {
             fromView.removeFromSuperview()

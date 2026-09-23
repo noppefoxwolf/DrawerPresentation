@@ -21,7 +21,7 @@ open class SidebarInteraction: NSObject, UIInteraction {
 
     public init(
         delegate: any SidebarInteractionDelegate,
-        presentation: SidebarPresentation = .modal(movesPresentingView: false)
+        presentation: SidebarPresentation = .modal
     ) {
         self.delegate = delegate
         self.presentation = presentation
@@ -63,11 +63,8 @@ open class SidebarInteraction: NSObject, UIInteraction {
         guard isEnabled else { return }
 
         switch presentation {
-        case let .modal(movesPresentingView):
-            presentModally(
-                isInteractiveTransitionEnabled: isInteractiveTransitionEnabled,
-                movesPresentingView: movesPresentingView
-            )
+        case .modal:
+            presentModally(isInteractiveTransitionEnabled: isInteractiveTransitionEnabled)
 
         case .embedded:
             presentAsEmbedded(isInteractiveTransitionEnabled: isInteractiveTransitionEnabled)
@@ -84,10 +81,7 @@ open class SidebarInteraction: NSObject, UIInteraction {
         }
     }
 
-    private func presentModally(
-        isInteractiveTransitionEnabled: Bool,
-        movesPresentingView: Bool
-    ) {
+    private func presentModally(isInteractiveTransitionEnabled: Bool) {
         guard let parent = delegate?.viewController(for: self) else { return }
         guard let vc = delegate?.sidebarInteraction(self, presentingViewControllerFor: parent) else {
             return
@@ -96,10 +90,7 @@ open class SidebarInteraction: NSObject, UIInteraction {
         removeEmbeddedViewController()
 
         let sidebarWidth = width(for: vc)
-        let transitionController = SidebarTransitionController(
-            sidebarWidth: sidebarWidth,
-            movesPresentingView: movesPresentingView
-        )
+        let transitionController = SidebarTransitionController(sidebarWidth: sidebarWidth)
         if isInteractiveTransitionEnabled {
             transitionController.interactiveTransition = UIPercentDrivenInteractiveTransition()
         }
@@ -156,15 +147,10 @@ open class SidebarInteraction: NSObject, UIInteraction {
     }
 
     private func handleModalPan(_ gesture: UIPanGestureRecognizer) {
-        guard case let .modal(movesPresentingView) = presentation else { return }
-
         switch gesture.state {
         case .began:
             if transitionController?.interactiveTransition == nil {
-                presentModally(
-                    isInteractiveTransitionEnabled: true,
-                    movesPresentingView: movesPresentingView
-                )
+                presentModally(isInteractiveTransitionEnabled: true)
                 transitionController?.interactiveTransition?.completionCurve = .easeOut
             }
 
@@ -173,12 +159,11 @@ open class SidebarInteraction: NSObject, UIInteraction {
                 return
             }
 
-            let x = gesture.translation(in: gesture.view).x
-            let width = max(
-                transitionController?.sidebarWidth ?? SidebarTransitionController.defaultSidebarWidth,
-                1
+            let fractionCompleted = SidebarGestureMetrics.presentationProgress(
+                translation: gesture.translation(in: gesture.view).x,
+                width: transitionController?.sidebarWidth
+                    ?? SidebarTransitionController.defaultSidebarWidth
             )
-            let fractionCompleted = min(max(x / width, 0), 1)
             transitionController?.interactiveTransition?.update(fractionCompleted)
 
         case .ended:
@@ -186,13 +171,15 @@ open class SidebarInteraction: NSObject, UIInteraction {
                 return
             }
 
-            let width = max(
-                transitionController?.sidebarWidth ?? SidebarTransitionController.defaultSidebarWidth,
-                1
+            let fractionCompleted = SidebarGestureMetrics.presentationProgress(
+                translation: gesture.translation(in: gesture.view).x,
+                width: transitionController?.sidebarWidth
+                    ?? SidebarTransitionController.defaultSidebarWidth
             )
-            let x = gesture.translation(in: gesture.view).x
-            let fractionCompleted = min(max(x / width, 0), 1)
-            if gesture.velocity(in: gesture.view).x > 0 || fractionCompleted >= 0.5 {
+            if SidebarGestureMetrics.shouldFinishPresentation(
+                velocity: gesture.velocity(in: gesture.view).x,
+                progress: fractionCompleted
+            ) {
                 interactiveTransition.finish()
             } else {
                 interactiveTransition.cancel()
@@ -218,18 +205,23 @@ open class SidebarInteraction: NSObject, UIInteraction {
         case .changed:
             guard let embeddedViewController else { return }
 
-            let x = gesture.translation(in: gesture.view).x
-            let width = max(embeddedViewController.sidebarWidth, 1)
-            let fractionCompleted = min(max(x / width, 0), 1)
+            let fractionCompleted = SidebarGestureMetrics.presentationProgress(
+                translation: gesture.translation(in: gesture.view).x,
+                width: embeddedViewController.sidebarWidth
+            )
             embeddedViewController.updateInteractivePresentation(fractionCompleted)
 
         case .ended:
             guard let embeddedViewController else { return }
 
-            let width = max(embeddedViewController.sidebarWidth, 1)
-            let x = gesture.translation(in: gesture.view).x
-            let fractionCompleted = min(max(x / width, 0), 1)
-            if gesture.velocity(in: gesture.view).x > 0 || fractionCompleted >= 0.5 {
+            let fractionCompleted = SidebarGestureMetrics.presentationProgress(
+                translation: gesture.translation(in: gesture.view).x,
+                width: embeddedViewController.sidebarWidth
+            )
+            if SidebarGestureMetrics.shouldFinishPresentation(
+                velocity: gesture.velocity(in: gesture.view).x,
+                progress: fractionCompleted
+            ) {
                 embeddedViewController.finishInteractivePresentation()
             } else {
                 embeddedViewController.cancelInteractivePresentation()

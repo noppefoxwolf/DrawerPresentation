@@ -2,7 +2,7 @@ import UIKit
 
 @MainActor
 final class SidebarPresentationController: UIPresentationController {
-    private let sidebarWidth: CGFloat
+    private let motion: SidebarPresentationMotion
     private let dimmingView = DimmingView()
     private let dismissPanGesture = UIPanGestureRecognizer()
 
@@ -13,7 +13,7 @@ final class SidebarPresentationController: UIPresentationController {
         presenting presentingViewController: UIViewController?,
         sidebarWidth: CGFloat
     ) {
-        self.sidebarWidth = sidebarWidth
+        motion = SidebarPresentationMotion(sidebarWidth: sidebarWidth)
         super
             .init(
                 presentedViewController: presentedViewController,
@@ -30,11 +30,9 @@ final class SidebarPresentationController: UIPresentationController {
 
     override var frameOfPresentedViewInContainerView: CGRect {
         guard let containerView else { return .zero }
-        return CGRect(
-            x: containerView.bounds.minX,
-            y: containerView.bounds.minY,
-            width: sidebarWidth,
-            height: containerView.bounds.height
+        return motion.sidebarFrame(
+            progress: 1,
+            in: containerView.bounds
         )
     }
 
