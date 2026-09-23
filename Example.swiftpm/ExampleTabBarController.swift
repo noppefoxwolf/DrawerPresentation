@@ -123,9 +123,4 @@ final class ExampleTabBarController: UITabBarController {
         alternativeSidebar.bottomBarView = ExampleSidebarBottomView()
     }
 
-    @objc
-    private func closeSidebar() {
-        presentedViewController?.dismiss(animated: true)
-    }
-
 }

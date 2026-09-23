@@ -123,6 +123,7 @@ public final class AlternativeSidebarViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
 
+        configureCloseButton()
         configureCollectionView()
         configureLayout()
         setContentScrollView(collectionView, for: .bottom)
@@ -133,5 +134,19 @@ public final class AlternativeSidebarViewController: UIViewController {
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateBottomViewInsets()
+    }
+
+    private func configureCloseButton() {
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "platter.filled.bottom.iphone"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        closeButton.accessibilityLabel = "Close Sidebar"
+        closeButton.primaryAction = UIAction { [weak self] _ in
+            self?.navigationController?.dismiss(animated: true)
+        }
+        navigationItem.rightBarButtonItem = closeButton
     }
 }

@@ -37,6 +37,7 @@ public final class AlternativeSidebar: SidebarInteraction {
     private let delegateProxy: DelegateProxy
     private weak var tabBarController: UITabBarController?
     private weak var presentedSidebarViewController: AlternativeSidebarViewController?
+    private weak var presentedSidebarContainerViewController: UIViewController?
     private var traitChangeRegistration: (any UITraitChangeRegistration)?
     private var userIsEnabled = true
     private var isAvailableForInteraction = false
@@ -71,7 +72,7 @@ public final class AlternativeSidebar: SidebarInteraction {
 
     public var isHidden: Bool {
         get {
-            presentedSidebarViewController?.presentingViewController == nil
+            presentedSidebarContainerViewController?.presentingViewController == nil
         }
         set {
             if newValue {
@@ -135,8 +136,10 @@ public final class AlternativeSidebar: SidebarInteraction {
             bottomView: bottomBarView
         )
         viewController.delegate = delegateProxy
+        let navigationController = UINavigationController(rootViewController: viewController)
         presentedSidebarViewController = viewController
-        return viewController
+        presentedSidebarContainerViewController = navigationController
+        return navigationController
     }
 
     private func didSelect(tab: UITab) {
