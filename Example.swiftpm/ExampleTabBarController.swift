@@ -1,10 +1,10 @@
-import CompactSidebar
+import AlternativeSidebar
 import SidebarPresentation
 import UIKit
 
 @MainActor
 final class ExampleTabBarController: UITabBarController, SidebarInteractionDelegate,
-    CompactSidebarViewControllerDelegate
+    AlternativeSidebarViewControllerDelegate
 {
     private lazy var sidebarInteraction = SidebarInteraction(
         delegate: self,
@@ -130,7 +130,7 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
         _ interaction: SidebarInteraction,
         presentingViewControllerFor viewController: UIViewController
     ) -> UIViewController? {
-        let sidebarViewController = CompactSidebarViewController(
+        let sidebarViewController = AlternativeSidebarViewController(
             tabs: tabs,
             selectedTab: selectedTab,
             headerConfiguration: sidebar.headerContentConfiguration,
@@ -157,8 +157,8 @@ final class ExampleTabBarController: UITabBarController, SidebarInteractionDeleg
         return navigationController
     }
 
-    func compactSidebarViewController(
-        _ viewController: CompactSidebarViewController,
+    func alternativeSidebarViewController(
+        _ viewController: AlternativeSidebarViewController,
         didSelect tab: UITab
     ) {
         selectedTab = tab

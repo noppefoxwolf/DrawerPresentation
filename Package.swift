@@ -13,8 +13,8 @@ let package = Package(
             targets: ["SidebarPresentation"]
         ),
         .library(
-            name: "CompactSidebar",
-            targets: ["CompactSidebar"]
+            name: "AlternativeSidebar",
+            targets: ["AlternativeSidebar"]
         ),
     ],
     targets: [
@@ -28,7 +28,7 @@ let package = Package(
             dependencies: ["InteractiveContainerPanGestureRecognizer"]
         ),
         .target(
-            name: "CompactSidebar"
+            name: "AlternativeSidebar"
         ),
         .testTarget(
             name: "SidebarPresentationTests",

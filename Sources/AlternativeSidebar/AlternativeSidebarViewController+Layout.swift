@@ -1,7 +1,7 @@
 import UIKit
 
 @MainActor
-extension CompactSidebarViewController {
+extension AlternativeSidebarViewController {
     func makeBackgroundEffectView() -> UIVisualEffectView {
         if #available(iOS 26.0, *) {
             UIVisualEffectView(effect: UIGlassEffect(style: .regular))

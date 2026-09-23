@@ -39,7 +39,7 @@ let package = Package(
 
             dependencies: [
                 .product(name: "SidebarPresentation", package: "SidebarPresentation"),
-                .product(name: "CompactSidebar", package: "SidebarPresentation"),
+                .product(name: "AlternativeSidebar", package: "SidebarPresentation"),
             ],
 
             path: "."

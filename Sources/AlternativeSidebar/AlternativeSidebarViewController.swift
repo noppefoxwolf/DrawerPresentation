@@ -1,18 +1,18 @@
 import UIKit
 
 @MainActor
-public protocol CompactSidebarViewControllerDelegate: AnyObject {
-    func compactSidebarViewController(
-        _ viewController: CompactSidebarViewController,
+public protocol AlternativeSidebarViewControllerDelegate: AnyObject {
+    func alternativeSidebarViewController(
+        _ viewController: AlternativeSidebarViewController,
         didSelect tab: UITab
     )
 }
 
 @MainActor
-public final class CompactSidebarViewController: UIViewController {
+public final class AlternativeSidebarViewController: UIViewController {
     internal let tabs: [UITab]
 
-    public weak var delegate: (any CompactSidebarViewControllerDelegate)?
+    public weak var delegate: (any AlternativeSidebarViewControllerDelegate)?
 
     public var selectedTab: UITab? {
         didSet {

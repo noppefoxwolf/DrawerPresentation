@@ -1,7 +1,7 @@
 import UIKit
 
 @MainActor
-extension CompactSidebarViewController {
+extension AlternativeSidebarViewController {
     func makeCellRegistration() -> UICollectionView.CellRegistration<UICollectionViewListCell, Int>
     {
         UICollectionView.CellRegistration<UICollectionViewListCell, Int> {
@@ -13,7 +13,7 @@ extension CompactSidebarViewController {
             let image = tab.image
 
             cell.accessories = []
-            cell.accessibilityIdentifier = "compactSidebar.tab.\(tabIndex)"
+            cell.accessibilityIdentifier = "alternativeSidebar.tab.\(tabIndex)"
             cell.configurationUpdateHandler = { cell, state in
                 let foregroundColor: UIColor = state.isSelected ? .white : .label
                 let imageTintColor: UIColor = state.isSelected ? .white : .tintColor
@@ -123,7 +123,7 @@ extension CompactSidebarViewController {
 }
 
 @MainActor
-extension CompactSidebarViewController: UICollectionViewDelegate {
+extension AlternativeSidebarViewController: UICollectionViewDelegate {
     public func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
@@ -132,6 +132,6 @@ extension CompactSidebarViewController: UICollectionViewDelegate {
 
         let selectedTab = tabs[indexPath.item]
         self.selectedTab = selectedTab
-        delegate?.compactSidebarViewController(self, didSelect: selectedTab)
+        delegate?.alternativeSidebarViewController(self, didSelect: selectedTab)
     }
 }
