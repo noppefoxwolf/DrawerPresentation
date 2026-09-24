@@ -143,6 +143,11 @@ public final class AlternativeSidebar: SidebarInteraction {
     }
 
     private func didSelect(tab: UITab) {
+        // Workaround: Thread 1: "Attempting to select a view controller that isn't a child! (null)"
+        if let viewController = tab.viewController, viewController.parent == nil {
+            tabBarController?.addChild(viewController)
+        }
+        
         tabBarController?.selectedTab = tab
         dismiss()
     }
